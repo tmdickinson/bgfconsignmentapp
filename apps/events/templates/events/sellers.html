@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Sellers for {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<div class="title-row"><h1>Sellers</h1>{% if user.is_admin and not event.is_closed %}<a class="button primary" href="{% url 'events:seller_new' event.pk %}">Add seller</a>{% endif %}</div>
+<form method="get" class="search"><input type="search" name="q" value="{{ q }}" placeholder="Name, email or Seller ID" autofocus><button>Search</button></form>
+<table class="list">
+  <thead><tr><th>Seller ID</th><th>Name</th>{% if user.is_admin %}<th>Email</th><th>Payment method</th><th>Rules</th>{% endif %}<th></th></tr></thead>
+  <tbody>
+  {% for s in sellers %}
+  <tr class="{% if not s.account.is_active %}inactive{% endif %}">
+    <td>{% if user.is_admin %}<a href="{% url 'accounts:seller_edit' s.pk %}"><code>{{ s.seller_id }}</code></a>{% else %}<code>{{ s.seller_id }}</code>{% endif %}</td>
+    <td>{{ s.name }}</td>
+    {% if user.is_admin %}<td>{{ s.email }}</td><td>{{ s.payment_method }}</td><td>{% if s.rules_accepted_at %}Agreed{% else %}—{% endif %}</td>{% endif %}
+    <td>{% if s.linked_staff %}<span class="badge">Staff</span>{% endif %}{% if not s.account.is_active %} <span class="badge">Deactivated</span>{% endif %}</td>
+  </tr>
+  {% empty %}<tr><td colspan="6">No sellers{% if q %} match{% endif %}.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

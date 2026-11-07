@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Events{% endblock %}
+{% block content %}
+<div class="title-row"><h1>Events</h1>{% if user.is_admin %}<a class="button primary" href="{% url 'events:new' %}">New event</a>{% endif %}</div>
+<table class="list">
+  <thead><tr><th>Event ID</th><th>Name</th><th>Dates</th><th>Status</th></tr></thead>
+  <tbody>
+  {% for event in events %}
+  <tr><td><a href="{% url 'events:detail' event.pk %}"><code>{{ event.code }}</code></a></td><td>{{ event.name }}</td>
+    <td>{{ event.start_date|date:"M j" }}–{{ event.end_date|date:"M j, Y" }}</td>
+    <td><span class="badge status-{{ event.status }}">{{ event.get_status_display }}</span></td></tr>
+  {% empty %}<tr><td colspan="4">No events yet.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

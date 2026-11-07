@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Choose an account{% endblock %}
+{% block content %}
+<div class="narrow">
+  <h1>Which account?</h1>
+  <p>That email and password match more than one account.</p>
+  <form method="post">{% csrf_token %}
+    {% for account in accounts %}
+      <button class="choice big" name="account" value="{{ account.pk }}">{{ account.login_label }}</button>
+    {% endfor %}
+  </form>
+  <p><a href="{% url 'accounts:login' %}">Back to sign in</a></p>
+</div>
+{% endblock %}

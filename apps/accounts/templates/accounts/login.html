@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<div class="narrow">
+  <h1>Sign in</h1>
+  <form method="post">{% csrf_token %}
+    {{ form.non_field_errors }}
+    {% for field in form %}{% include "core/field.html" %}{% endfor %}
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+    <button class="primary big">Sign in</button>
+  </form>
+  <p><a href="{% url 'accounts:forgot_password' %}">Forgot your password, or need to set one?</a></p>
+</div>
+{% endblock %}

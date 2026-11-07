@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Add seller to {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:sellers' event.pk %}">← Sellers</a></p>
+<h1>Add seller to {{ event.code }}</h1>
+{% if response %}<p class="help">From a {{ response.get_source_display }} response marked “{{ response.get_outcome_display }}”.</p>{% endif %}
+<p class="help">The seller is emailed a set-password link. The first seller locks the event's fees.</p>
+<form method="post">{% csrf_token %}
+  {% if response %}<input type="hidden" name="response" value="{{ response.pk }}">{% endif %}
+  {{ form.non_field_errors }}
+  {% for field in form %}{% include "core/field.html" %}{% endfor %}
+  <button class="primary">Create seller</button>
+</form>
+{% endblock %}

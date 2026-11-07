@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{% if profile %}{{ profile.name }}{% else %}Add staff{% endif %}{% endblock %}
+{% block content %}
+<p><a href="{% url 'accounts:staff_list' %}">← Staff</a></p>
+<h1>{% if profile %}{{ profile.name }}{% else %}Add staff{% endif %}</h1>
+{% if profile %}
+<dl class="facts">
+  {% if profile.volunteer_id %}<dt>Volunteer ID</dt><dd><code>{{ profile.volunteer_id }}</code></dd>{% endif %}
+  {% if profile.is_admin %}<dt>Admin badge</dt><dd><code>{{ profile.admin_id }}</code> issued {{ profile.badge_issued_at|date:"M j, Y" }}{% if profile.badge_locked %} <span class="badge danger">Locked</span>{% endif %} · PIN {% if profile.pin_hash %}set{% else %}not set{% endif %}</dd>{% endif %}
+  <dt>Status</dt><dd>{% if profile.account.is_active %}Active{% else %}Deactivated{% endif %}{% if profile.account.last_login %}, last signed in {{ profile.account.last_login|date:"M j, Y g:i A" }}{% endif %}</dd>
+</dl>
+{% endif %}
+<form method="post">{% csrf_token %}
+  {{ form.non_field_errors }}
+  {% for field in form %}{% include "core/field.html" %}{% endfor %}
+  <button class="primary">{% if profile %}Save{% else %}Add and email a set-password link{% endif %}</button>
+</form>
+{% if profile %}
+<section class="panel actions">
+  <h2>Actions</h2>
+  <form method="post" action="{% url 'accounts:staff_action' profile.pk 'send-link' %}">{% csrf_token %}<button>Email a set-password link</button></form>
+  {% if profile.is_admin %}
+    <a class="button" href="{% url 'accounts:staff_badge' profile.pk %}">Print badge</a>
+    {% if profile.badge_locked %}<form method="post" action="{% url 'accounts:staff_action' profile.pk 'unlock-badge' %}">{% csrf_token %}<button>Unlock badge</button></form>{% endif %}
+    <form method="post" action="{% url 'accounts:staff_action' profile.pk 'reissue-badge' %}" onsubmit="return confirm('Issue a new badge? The current one will stop working.')">{% csrf_token %}<button>Reissue lost badge</button></form>
+  {% endif %}
+  {% if profile.account.is_active %}
+    <form method="post" action="{% url 'accounts:staff_action' profile.pk 'deactivate' %}" onsubmit="return confirm('Deactivate this account?')">{% csrf_token %}<button class="danger">Deactivate</button></form>
+  {% else %}
+    <form method="post" action="{% url 'accounts:staff_action' profile.pk 'activate' %}">{% csrf_token %}<button>Reactivate</button></form>
+  {% endif %}
+</section>
+{% if linked %}
+<section class="panel"><h2>Linked seller accounts</h2>
+<ul>{% for s in linked %}<li><a href="{% url 'accounts:seller_edit' s.pk %}">{{ s.seller_id }}</a> for {{ s.event.name }}, linked {{ s.linked_at|date:"M j, Y" }}</li>{% endfor %}</ul></section>
+{% endif %}
+{% endif %}
+{% endblock %}

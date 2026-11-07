@@ -1,0 +1,11 @@
+{% load money %}
+<dl class="facts">
+  <dt>Commission</dt><dd>{{ event.commission_percent }}% of each game's sale price</dd>
+  <dt>Listing fee</dt>
+  <dd>{% if event.listing_fee_type == "sheet" %}{{ event.sheet_fee_cents|cents }} for each sheet of up to {{ event.items_per_sheet }} games checked in. A part sheet costs the same as a full one.{% else %}{{ event.flat_fee_cents|cents }} per seller{% endif %}</dd>
+  <dt>Unsold item fee</dt>
+  <dd>{{ event.unsold_fee_cents|cents }} for each checked-in game that is returned to you or not collected{% if event.charge_unsold_on_donated %}, and for each donated game{% endif %}</dd>
+  <dt>If fees are more than your sales</dt>
+  <dd>{% if event.charge_negative_balances %}You owe the difference.{% else %}You're paid nothing, and the difference is forgiven.{% endif %}</dd>
+</dl>
+<p class="help">Sellers with no games checked in pay no fees.</p>

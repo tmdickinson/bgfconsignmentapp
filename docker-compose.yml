@@ -1,0 +1,14 @@
+# Local Postgres only. The app runs with `uv run`.
+services:
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: bgf
+      POSTGRES_PASSWORD: bgf
+      POSTGRES_DB: bgf
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:

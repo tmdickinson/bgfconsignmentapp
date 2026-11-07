@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}Price windows for {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Price windows</h1>
+<p class="help">{% if locked %}Names and the number of windows are locked because items have been added. Scheduled times can always change.{% else %}Names and the number of windows lock once any item is added. Leave the blank row empty unless adding a window.{% endif %} Scheduled times only show warnings at the registers. An admin always chooses the active window.</p>
+<form method="post">{% csrf_token %}
+  {{ formset.management_form }}
+  {{ formset.non_form_errors }}
+  <table class="list form-table">
+    <thead><tr><th>Name</th><th>Scheduled start</th><th>Scheduled end</th>{% if formset.can_delete %}<th>Remove</th>{% endif %}</tr></thead>
+    <tbody>
+    {% for form in formset %}
+      <tr>
+        <td>{{ form.name }}{{ form.name.errors }}</td>
+        <td>{{ form.scheduled_start }}{{ form.scheduled_start.errors }}</td>
+        <td>{{ form.scheduled_end }}{{ form.scheduled_end.errors }}</td>
+        {% if formset.can_delete %}<td>{{ form.DELETE }}</td>{% endif %}
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <button class="primary">Save windows</button>
+</form>
+{% endblock %}

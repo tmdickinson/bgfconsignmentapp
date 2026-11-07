@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Fee waivers for {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Fee waivers</h1>
+<p class="help">Volunteer and admin waivers apply to seller accounts linked to staff with that role. Waivers can change until the event closes and don't change the event's fees.</p>
+<div class="columns">
+{% for category, form in category_forms.items %}
+  <section class="panel">
+    <h2>{% if category == "volunteer" %}Volunteers{% else %}Admins{% endif %}</h2>
+    <form method="post">{% csrf_token %}<input type="hidden" name="category" value="{{ category }}">
+      {% for field in form %}{% include "core/field.html" %}{% endfor %}
+      {% if not event.is_closed %}<button class="primary">Save</button>{% endif %}
+    </form>
+  </section>
+{% endfor %}
+</div>
+<section class="panel">
+  <h2>Individual sellers</h2>
+  {% if seller_waivers %}
+  <table class="list"><thead><tr><th>Seller</th><th>Waived</th><th>Note</th><th>Set by</th></tr></thead><tbody>
+  {% for w in seller_waivers %}<tr><td>{{ w.seller.seller_id }} {{ w.seller.name }}</td><td>{{ w.waived_labels|join:", " }}</td><td>{{ w.note }}</td><td>{{ w.set_by.display_name }}, {{ w.set_at|date:"M j g:i A" }}</td></tr>{% endfor %}
+  </tbody></table>
+  {% endif %}
+  {% if not event.is_closed %}
+  <h3>Set a seller's waiver</h3>
+  <p class="help">Untick everything to remove a seller's waiver.</p>
+  <form method="post">{% csrf_token %}<input type="hidden" name="category" value="seller">
+    {% for field in seller_form %}{% include "core/field.html" %}{% endfor %}
+    <button class="primary">Save</button>
+  </form>
+  {% endif %}
+</section>
+<section class="panel">
+  <h2>History</h2>
+  <table class="list"><thead><tr><th>Who</th><th>Waived</th><th>Set</th><th>Replaced</th></tr></thead><tbody>
+  {% for w in history %}<tr><td>{% if w.seller %}{{ w.seller.seller_id }}{% else %}{{ w.get_category_display }}{% endif %}</td><td>{{ w.waived_labels|join:", " }}</td><td>{{ w.set_by.display_name }}, {{ w.set_at|date:"M j g:i A" }}</td><td>{{ w.revoked_at|date:"M j g:i A"|default:"Current" }}</td></tr>
+  {% empty %}<tr><td colspan="4">No waivers.</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+{% endblock %}

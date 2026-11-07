@@ -1,0 +1,5 @@
+<fieldset class="override">
+  <legend>Admin override</legend>
+  {{ form.non_field_errors }}
+  {% for field in form %}{% include "core/field.html" %}{% endfor %}
+</fieldset>

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Home{% endblock %}
+{% block content %}
+<h1>Hello, {{ user.staff.name }}</h1>
+{% for event, reminder in reminders %}
+  <div class="flash warning">Reminder: {{ event.code }} was scheduled to move to {{ reminder.status_label }} at {{ reminder.scheduled_at|date:"M j, g:i A" }}. <a href="{% url 'events:advance' event.pk %}">Review status</a></div>
+{% endfor %}
+<h2>Events</h2>
+{% if events %}
+<ul class="cards">
+  {% for event in events %}
+  <li><a class="card" href="{% url 'events:detail' event.pk %}"><strong>{{ event.code }}</strong> {{ event.name }}<span class="badge status-{{ event.status }}">{{ event.get_status_display }}</span></a></li>
+  {% endfor %}
+</ul>
+{% else %}
+<p>{% if user.is_admin %}No open events. <a href="{% url 'events:new' %}">Create one</a>.{% else %}You don't have access to an open event yet. Ask an admin.{% endif %}</p>
+{% endif %}
+{% if linked %}
+<h2>Your seller accounts</h2>
+<ul>{% for seller in linked %}<li><a href="{% url 'accounts:seller_home' seller.pk %}">{{ seller.seller_id }} for {{ seller.event.name }}</a></li>{% endfor %}</ul>
+{% endif %}
+{% endblock %}

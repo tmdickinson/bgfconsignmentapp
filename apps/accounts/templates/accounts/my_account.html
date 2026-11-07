@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block title %}My account{% endblock %}
+{% block content %}
+<h1>My account</h1>
+<dl class="facts">
+  <dt>Name</dt><dd>{{ profile.name }}</dd>
+  <dt>Email</dt><dd>{{ user.email }}</dd>
+  {% if profile.volunteer_id %}<dt>Volunteer ID</dt><dd><code>{{ profile.volunteer_id }}</code></dd>{% endif %}
+  {% if profile.is_admin %}<dt>Admin badge</dt><dd><code>{{ profile.admin_id }}</code>{% if profile.badge_locked %} <span class="badge danger">Locked</span>{% endif %} · <a href="{% url 'accounts:staff_badge' profile.pk %}">Print badge</a></dd>{% endif %}
+</dl>
+<p><a href="{% url 'accounts:change_password' %}">Change password</a></p>
+
+{% if profile.is_admin %}
+<section class="panel">
+  <h2>Override PIN</h2>
+  <p>{% if profile.pin_hash %}Your PIN is set. You can change it here.{% else %}<strong>Set a PIN</strong> to use your badge for overrides on volunteer screens.{% endif %}</p>
+  <form method="post">{% csrf_token %}
+    {{ pin_form.non_field_errors }}
+    {% for field in pin_form %}{% include "core/field.html" %}{% endfor %}
+    <button class="primary">Save PIN</button>
+  </form>
+</section>
+{% endif %}
+
+<section class="panel">
+  <h2>Seller accounts</h2>
+  {% if linked %}
+  <ul>{% for seller in linked %}<li><a href="{% url 'accounts:seller_home' seller.pk %}">{{ seller.seller_id }} for {{ seller.event.name }}</a></li>{% endfor %}</ul>
+  {% endif %}
+  {% if active_events %}
+  <h3>Seller for this event?</h3>
+  <p>Register with the seller form like everyone else, then enter that Seller ID and its password here. Linking applies any fee waivers for staff.</p>
+  <form method="post">{% csrf_token %}
+    {{ link_form.non_field_errors }}
+    {% for field in link_form %}{% include "core/field.html" %}{% endfor %}
+    <button class="primary">Link seller account</button>
+  </form>
+  {% endif %}
+</section>
+{% endblock %}

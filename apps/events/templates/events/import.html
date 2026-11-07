@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block title %}Seller signups for {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Seller signups</h1>
+<p class="help">New responses create seller accounts only during Presale. Duplicates, incomplete responses and anything outside Presale go to the <a href="{% url 'events:review' event.pk %}">review list</a>{% if review_count %} ({{ review_count }} waiting){% endif %}. Each response is processed once, and imports never change existing accounts.</p>
+
+<section class="panel">
+  <h2>Google Form</h2>
+  {% if not event.form_url %}
+    <p>No form link yet. Add it in the <a href="{% url 'events:edit' event.pk %}">event settings</a>.</p>
+  {% elif not google_configured %}
+    <p>The Google connection isn't set up on this server. A developer needs to set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET. Use CSV import meanwhile.</p>
+  {% else %}
+    {% if connection %}
+      <p>Connected by {{ connection.authorized_by.display_name }} on {{ connection.authorized_at|date:"M j, Y" }}.{% if event.last_synced_at %} Last synced {{ event.last_synced_at|date:"M j, g:i A" }}.{% endif %}</p>
+      {% if connection.last_error %}<div class="flash error">Last sync failed: {{ connection.last_error }}</div>{% endif %}
+      <form method="post" action="{% url 'events:google_sync' event.pk %}" class="inline">{% csrf_token %}<button class="primary">Sync now</button></form>
+    {% endif %}
+    <form method="post" action="{% url 'events:google_connect' event.pk %}" class="inline">{% csrf_token %}<button>{% if connection %}Reconnect{% else %}Connect to Google Form{% endif %}</button></form>
+    <p class="help">Whoever connects must have access to the form. The app only reads the form and its responses.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Field mapping</h2>
+  <form method="post">{% csrf_token %}
+    {% for field in mapping_form %}{% include "core/field.html" %}{% endfor %}
+    <button name="save_mapping" value="1">Save mapping</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>CSV import</h2>
+  <p class="help">The backup to the Google connection. Download the responses as CSV from the form and upload them here. Rows already imported are skipped.</p>
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    {% for field in csv_form %}{% include "core/field.html" %}{% endfor %}
+    <button class="primary" name="import_csv" value="1">Import</button>
+  </form>
+</section>
+
+<section class="panel">
+  <h2>Recent responses</h2>
+  <table class="list"><thead><tr><th>Received</th><th>Source</th><th>Outcome</th><th>Seller</th></tr></thead><tbody>
+  {% for r in recent %}<tr><td>{{ r.received_at|date:"M j, g:i A" }}</td><td>{{ r.get_source_display }}</td><td>{{ r.get_outcome_display }}</td><td>{% if r.seller %}{{ r.seller.seller_id }}{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="4">None yet.</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+{% endblock %}

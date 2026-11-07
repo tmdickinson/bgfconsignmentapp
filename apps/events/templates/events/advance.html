@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Change status of {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Move {{ event.code }} to {{ target.label|default:"—" }}</h1>
+{% if not target %}
+  <p>The event is in its final status.</p>
+{% else %}
+  <p>Now: <span class="badge status-{{ event.status }}">{{ event.get_status_display }}</span> → <span class="badge status-{{ target.value }}">{{ target.label }}</span></p>
+  <div class="flash warning">
+    <strong>This can't be undone.</strong> Statuses only move forward.
+    {% if target.value == "presale" %}Sellers can register and manage listings.
+    {% elif target.value == "checkin" %}Registration and listing changes stop.
+    {% elif target.value == "sale" %}Volunteer checkout opens once an admin chooses the active price window.
+    {% elif target.value == "pickup" %}Regular checkout ends and returns begin.
+    {% elif target.value == "postsale" %}This closes the event and freezes all figures. Sellers can sign in for 30 more days.{% endif %}
+  </div>
+  {% if blockers %}
+    <div class="flash error"><p>Not yet:</p><ul>{% for b in blockers %}<li>{{ b }}</li>{% endfor %}</ul></div>
+  {% else %}
+  <form method="post">{% csrf_token %}
+    <input type="hidden" name="expected" value="{{ event.status }}">
+    <div class="field checkbox"><label><input type="checkbox" name="confirm" value="yes"> I understand this can't be undone.</label></div>
+    <button class="primary big">Move to {{ target.label }}</button>
+  </form>
+  {% endif %}
+{% endif %}
+{% endblock %}

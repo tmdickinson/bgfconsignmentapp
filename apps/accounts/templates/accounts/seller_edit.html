@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ seller.seller_id }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:sellers' event.pk %}">← Sellers for {{ event.code }}</a></p>
+<h1>{{ seller.seller_id }} {{ seller.name }}</h1>
+<dl class="facts">
+  <dt>Status</dt><dd>{% if seller.account.is_active %}Active{% else %}Deactivated{% endif %}{% if seller.login_expired %}, sign-in ended {{ seller.logins_end_at|date:"M j, Y" }}{% endif %}</dd>
+  <dt>Rules accepted</dt><dd>{{ seller.rules_accepted_at|date:"M j, Y g:i A"|default:"Not yet" }}</dd>
+  <dt>Linked staff</dt><dd>{% if seller.linked_staff %}<a href="{% url 'accounts:staff_edit' seller.linked_staff.pk %}">{{ seller.linked_staff.name }}</a>{% else %}None{% endif %}</dd>
+</dl>
+<form method="post">{% csrf_token %}
+  {{ form.non_field_errors }}
+  {% for field in form %}{% include "core/field.html" %}{% endfor %}
+  <button class="primary">Save</button>
+</form>
+<section class="panel actions">
+  <h2>Actions</h2>
+  <form method="post">{% csrf_token %}<button name="action" value="send-link">Email a set-password link</button></form>
+  <form method="post">{% csrf_token %}{% if seller.account.is_active %}<button class="danger" name="action" value="deactivate">Deactivate</button>{% else %}<button name="action" value="activate">Reactivate</button>{% endif %}</form>
+</section>
+{% endblock %}

@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Check your email{% endblock %}
+{% block content %}
+<div class="narrow">
+  <h1>Check your email</h1>
+  <p>If that matches an active account, a link is on its way. It works for 7 days.</p>
+  <p><a href="{% url 'accounts:login' %}">Back to sign in</a></p>
+</div>
+{% endblock %}

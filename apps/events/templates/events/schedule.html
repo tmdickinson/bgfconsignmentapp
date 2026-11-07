@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Status schedule for {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Status schedule</h1>
+<p class="help">Optional. When a time passes, admins see a reminder. The status never changes on its own.</p>
+<form method="post">{% csrf_token %}
+  {% for field in form %}{% include "core/field.html" %}{% endfor %}
+  <button class="primary">Save</button>
+</form>
+{% endblock %}

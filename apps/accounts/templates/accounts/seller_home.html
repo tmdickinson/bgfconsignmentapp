@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ seller.seller_id }}{% endblock %}
+{% block content %}
+<h1>{{ seller.name }}</h1>
+<dl class="facts">
+  <dt>Seller ID</dt><dd><code>{{ seller.seller_id }}</code></dd>
+  <dt>Event</dt><dd>{{ event.name }}, {{ event.start_date|date:"M j" }}–{{ event.end_date|date:"M j, Y" }} <span class="badge status-{{ event.status }}">{{ event.get_status_display }}</span></dd>
+  <dt>Preferred payment</dt><dd>{{ seller.payment_method|default:"Not given" }}</dd>
+  {% if seller.logins_end_at %}<dt>Sign-in available until</dt><dd>{{ seller.logins_end_at|date:"M j, Y" }}</dd>{% endif %}
+</dl>
+<section class="panel">
+  <h2>My games</h2>
+  <p>Listing games and printing slips will appear here.</p>
+</section>
+<p><a href="{% url 'accounts:seller_rules' seller.pk %}">Selling rules and fees</a></p>
+{% endblock %}

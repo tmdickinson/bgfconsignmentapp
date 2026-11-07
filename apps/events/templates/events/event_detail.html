@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}{{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:list' %}">← Events</a></p>
+<div class="title-row">
+  <h1><code>{{ event.code }}</code> {{ event.name }}</h1>
+  <span class="badge big status-{{ event.status }}">{{ event.get_status_display }}</span>
+</div>
+<p>{{ event.start_date|date:"l, M j" }} to {{ event.end_date|date:"l, M j, Y" }}</p>
+
+{% for reminder in reminders %}
+  <div class="flash warning">Scheduled to move to {{ reminder.status_label }} at {{ reminder.scheduled_at|date:"M j, g:i A" }}. Statuses only change when an admin moves them.</div>
+{% endfor %}
+
+<nav class="tiles">
+  <a href="{% url 'events:sellers' event.pk %}">Sellers <strong>{{ seller_count }}</strong></a>
+  {% if user.is_admin %}
+  <a href="{% url 'events:import' event.pk %}">Seller signups{% if review_count %} <span class="badge warning">{{ review_count }} to review</span>{% endif %}</a>
+  <a href="{% url 'events:waivers' event.pk %}">Fee waivers</a>
+  <a href="{% url 'events:staff_sellers' event.pk %}">Staff who are sellers</a>
+  {% if event.next_status %}<a href="{% url 'events:advance' event.pk %}">Move to {{ event.next_status.label }}</a>{% endif %}
+  {% endif %}
+</nav>
+
+<section class="panel">
+  <div class="title-row"><h2>Settings</h2>{% if user.is_admin and not event.is_closed %}<a href="{% url 'events:edit' event.pk %}">Edit</a>{% endif %}</div>
+  {% include "events/_fees.html" %}
+  {% if event.fees_locked %}<p class="help">Fees locked {{ event.fees_locked_at|date:"M j, Y g:i A" }}.</p>{% endif %}
+</section>
+
+<section class="panel">
+  <div class="title-row"><h2>Price windows</h2>{% if user.is_admin and not event.is_closed %}<a href="{% url 'events:windows' event.pk %}">Edit</a>{% endif %}</div>
+  <table class="list"><thead><tr><th>#</th><th>Name</th><th>Scheduled start</th><th>Scheduled end</th></tr></thead><tbody>
+  {% for w in windows %}<tr><td>{{ w.position }}</td><td>{{ w.name }}</td><td>{{ w.scheduled_start|date:"D M j, g:i A"|default:"—" }}</td><td>{{ w.scheduled_end|date:"D M j, g:i A"|default:"—" }}</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+
+<section class="panel">
+  <div class="title-row"><h2>Status schedule</h2>{% if user.is_admin and not event.is_closed %}<a href="{% url 'events:schedule' event.pk %}">Edit</a>{% endif %}</div>
+  <p class="help">Reminders only. An admin always moves the status.</p>
+  <table class="list"><thead><tr><th>Status</th><th>Scheduled</th><th>Moved</th></tr></thead><tbody>
+  {% for row in schedule %}<tr><td>{{ row.status_label }}</td><td>{{ row.scheduled_at|date:"M j, g:i A"|default:"—" }}</td><td>{% if row.moved_at %}{{ row.moved_at|date:"M j, g:i A" }} by {{ row.moved_by.display_name }}{% else %}—{% endif %}</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+
+{% if user.is_admin %}
+<section class="panel">
+  <h2>Volunteers with access</h2>
+  {% if access %}<ul>{% for a in access %}<li><a href="{% url 'accounts:staff_edit' a.staff.pk %}">{{ a.staff.name }}</a> <code>{{ a.staff.volunteer_id }}</code></li>{% endfor %}</ul>
+  {% else %}<p>None yet. Grant access from each volunteer's page under <a href="{% url 'accounts:staff_list' %}">Staff</a>.</p>{% endif %}
+</section>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Signup review for {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:import' event.pk %}">← Seller signups</a></p>
+<h1>Signups to review</h1>
+<p>{% if show_done %}<a href="?">Show waiting</a>{% else %}<a href="?done=1">Show reviewed</a>{% endif %}</p>
+<table class="list">
+  <thead><tr><th>Received</th><th>Why</th><th>Name</th><th>Email</th><th>Payment</th><th></th></tr></thead>
+  <tbody>
+  {% for r, f in rows %}
+  <tr>
+    <td>{{ r.received_at|date:"M j, g:i A" }}<br><span class="help">{{ r.get_source_display }}</span></td>
+    <td>{{ r.get_outcome_display }}</td>
+    <td>{{ f.name }}</td><td>{{ f.email }}</td><td>{{ f.payment_method }}</td>
+    <td>
+      {% if r.reviewed_at %}
+        {{ r.reviewed_by.display_name }}, {{ r.reviewed_at|date:"M j" }}{% if r.review_note %}: {{ r.review_note }}{% endif %}
+      {% else %}
+        {% if not event.is_closed %}<a class="button" href="{% url 'events:seller_new' event.pk %}?response={{ r.pk }}">Create seller</a>{% endif %}
+        <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="response" value="{{ r.pk }}"><input name="note" placeholder="Note" maxlength="200"><button>Mark reviewed</button></form>
+      {% endif %}
+    </td>
+  </tr>
+  {% empty %}<tr><td colspan="6">Nothing {% if show_done %}reviewed yet{% else %}waiting{% endif %}.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

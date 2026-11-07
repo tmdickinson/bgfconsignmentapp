@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Selling rules{% endblock %}
+{% block content %}
+<h1>Selling rules and fees</h1>
+<p>{{ event.name }} · Seller {{ seller.seller_id }}</p>
+<section class="panel">
+  <h2>Rules</h2>
+  <div class="rules">{{ event.rules_text|linebreaks }}</div>
+  <h2>Fees</h2>
+  {% include "events/_fees.html" %}
+</section>
+{% if seller.rules_accepted_at %}
+  <p>You agreed to these on {{ seller.rules_accepted_at|date:"M j, Y g:i A" }}.</p>
+  <p><a href="{% url 'accounts:seller_home' seller.pk %}">Back to my games</a></p>
+{% else %}
+  <form method="post">{% csrf_token %}
+    <div class="field checkbox"><label><input type="checkbox" name="agree" value="1"> I have read and agree to the selling rules and fees.</label></div>
+    <button class="primary big">Agree and continue</button>
+  </form>
+{% endif %}
+{% endblock %}

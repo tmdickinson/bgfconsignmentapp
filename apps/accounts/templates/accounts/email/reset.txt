@@ -1,0 +1,7 @@
+{% autoescape off %}Someone asked to reset the password for the {{ brand.convention }} consignment store.
+{% for label, url in links %}
+{{ label }}:
+{{ url }}
+{% endfor %}
+Each link works for 7 days. If you didn't ask for this, you can ignore this email.
+{% endautoescape %}

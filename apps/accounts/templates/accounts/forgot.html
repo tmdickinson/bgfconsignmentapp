@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block title %}Set or reset your password{% endblock %}
+{% block content %}
+<div class="narrow">
+  <h1>Set or reset your password</h1>
+  <p>We'll email a link to the address on the account.</p>
+  <form method="post">{% csrf_token %}
+    {% for field in form %}{% include "core/field.html" %}{% endfor %}
+    <button class="primary">Email me a link</button>
+  </form>
+  <p><a href="{% url 'accounts:login' %}">Back to sign in</a></p>
+</div>
+{% endblock %}

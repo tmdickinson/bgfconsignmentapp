@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Staff{% endblock %}
+{% block content %}
+<div class="title-row"><h1>Staff</h1><a class="button primary" href="{% url 'accounts:staff_new' %}">Add staff</a></div>
+<table class="list">
+  <thead><tr><th>Name</th><th>Email</th><th>Roles</th><th>Volunteer ID</th><th>Admin ID</th><th></th></tr></thead>
+  <tbody>
+  {% for p in profiles %}
+  <tr class="{% if not p.account.is_active %}inactive{% endif %}">
+    <td><a href="{% url 'accounts:staff_edit' p.pk %}">{{ p.name }}</a></td>
+    <td>{{ p.account.email }}</td>
+    <td>{% if p.is_admin %}Admin {% endif %}{% if p.is_volunteer %}Volunteer{% endif %}</td>
+    <td><code>{{ p.volunteer_id|default:"" }}</code></td>
+    <td>{% if p.is_admin %}<code>{{ p.admin_id }}</code>{% if p.badge_locked %} <span class="badge danger">Locked</span>{% endif %}{% endif %}</td>
+    <td>{% if not p.account.is_active %}<span class="badge">Deactivated</span>{% endif %}</td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

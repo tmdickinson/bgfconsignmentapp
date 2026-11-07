@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Staff who are sellers{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Staff who are sellers in {{ event.code }}</h1>
+<table class="list">
+  <thead><tr><th>Seller ID</th><th>Seller name</th><th>Staff member</th><th>Roles</th><th>Linked</th></tr></thead>
+  <tbody>
+  {% for s in sellers %}
+  <tr><td><a href="{% url 'accounts:seller_edit' s.pk %}"><code>{{ s.seller_id }}</code></a></td><td>{{ s.name }}</td>
+    <td><a href="{% url 'accounts:staff_edit' s.linked_staff.pk %}">{{ s.linked_staff.name }}</a></td>
+    <td>{% if s.linked_staff.is_admin %}Admin {% endif %}{% if s.linked_staff.is_volunteer %}Volunteer{% endif %}</td>
+    <td>{{ s.linked_at|date:"M j, Y" }}</td></tr>
+  {% empty %}<tr><td colspan="5">No staff have linked a seller account for this event.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

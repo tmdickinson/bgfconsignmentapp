@@ -1,0 +1,38 @@
+[project]
+name = "bgf-consignment"
+version = "0.1.0"
+description = "Consignment store app for Buckeye Game Fest"
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "django>=5.2,<5.3",
+    "psycopg[binary]>=3.2",
+    "dj-database-url>=2.3",
+    "reportlab>=4.2",
+    "requests>=2.32",
+    "whitenoise>=6.8",
+    "gunicorn>=23.0",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3",
+    "pytest-django>=4.9",
+    "ruff>=0.8",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "bgf.settings_test"
+python_files = ["test_*.py"]
+addopts = "--reuse-db -q"
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+extend-exclude = ["*/migrations/*"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "UP", "DJ"]
+ignore = ["DJ008"]

@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block title %}Not allowed{% endblock %}
+{% block content %}
+<h1>Not allowed</h1>
+<p>Your account can't open that page.</p>
+<p><a href="{% url 'home' %}">Go to your home page</a></p>
+{% endblock %}
