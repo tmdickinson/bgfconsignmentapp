@@ -13,6 +13,13 @@
   {% for field in form %}{% include "core/field.html" %}{% endfor %}
   <button class="primary">Save</button>
 </form>
+<section class="panel">
+  <h2>Games</h2>
+  <table class="list"><thead><tr><th>Game</th><th>Status</th><th>Valid slip</th></tr></thead><tbody>
+  {% for listing in listings %}<tr class="{% if not listing.is_active %}inactive{% endif %}"><td><a href="{% url 'consignment:item_detail' listing.pk %}">{{ listing.name|default:"Untitled" }}</a></td><td>{{ listing.get_status_display }}</td><td>{% if listing.current_slip %}<code>{{ listing.current_slip.item_id }}</code>{% else %}—{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="3">No games listed.</td></tr>{% endfor %}
+  </tbody></table>
+</section>
 <section class="panel actions">
   <h2>Actions</h2>
   <form method="post">{% csrf_token %}<button name="action" value="send-link">Email a set-password link</button></form>

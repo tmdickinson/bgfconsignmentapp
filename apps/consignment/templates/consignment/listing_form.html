@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{% if mode == "new" %}Add a game{% else %}Edit {{ listing.name }}{% endif %}{% endblock %}
+{% block content %}
+<p><a href="{% url 'accounts:seller_home' seller.pk %}">← My games</a></p>
+<h1>{% if mode == "new" %}Add a game{% elif mode == "reactivate" %}Reactivate with changes{% else %}Edit {{ listing.name|default:"game" }}{% endif %}</h1>
+{% if mode == "reactivate" and listing.current_slip %}
+  <div class="flash warning">If you change anything printed on the slip, however small, slip <code>{{ listing.current_slip.item_id }}</code> stops working and you'll need to print a new one.</div>
+{% endif %}
+<p class="help">You can save a game unfinished and come back to it. Every active game must be complete before slips can be generated.</p>
+<form method="post" class="settings">{% csrf_token %}
+  {{ form.non_field_errors }}
+  <fieldset><legend>Game</legend>
+    {% for field in form.detail_fields %}{% if field.name in "name publisher description" %}{% include "core/field.html" %}{% endif %}{% endfor %}
+  </fieldset>
+  <fieldset><legend>Condition</legend>
+    {% include "core/field.html" with field=form.condition %}
+    {% include "core/field.html" with field=form.condition_note %}
+    {% include "core/field.html" with field=form.is_bundle %}
+    {% include "core/field.html" with field=form.bundle_count %}
+  </fieldset>
+  <fieldset><legend>Prices</legend>
+    <p class="help">Whole dollars, at least $1, for each price window. Buyers pay the price for the window that's open.</p>
+    <div class="price-grid">{% for field in form.price_fields %}{% include "core/field.html" %}{% endfor %}</div>
+  </fieldset>
+  <fieldset><legend>Slip</legend>
+    {% include "core/field.html" with field=form.slip_size %}
+    {% include "core/field.html" with field=form.donate_if_unsold %}
+    {% include "core/field.html" with field=form.bgg_id %}
+  </fieldset>
+  <button class="primary big">{% if mode == "reactivate" %}Save and reactivate{% else %}Save{% endif %}</button>
+  {% if mode == "new" %}<button class="big" name="add_another" value="1">Save and add another</button>{% endif %}
+</form>
+{% endblock %}

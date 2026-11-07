@@ -2,7 +2,7 @@
 
 The web app that runs the convention's consignment store. Requirements and plans are in [docs/](docs/README.md), with [docs/SPEC.md](docs/SPEC.md) as the source of truth.
 
-**Status:** Phase 1 of 5 is built: accounts, sign-in, staff, admin badges, events and seller signups.
+**Status:** Phases 1 and 2 of 5 are built: accounts, sign-in, staff, admin badges, events, seller signups, listings and printable sales slips.
 
 ## Local setup
 
@@ -60,6 +60,7 @@ bgf/                Settings and URLs
 apps/core/          Audit log, permissions, IDs, money helpers, badge-and-PIN override step
 apps/accounts/      Accounts, staff, sellers, sign-in, seller linking, badges
 apps/events/        Events, statuses, price windows, fees, waivers, signup import
+apps/consignment/   Listings, slip versions and slip PDFs
 templates/          Shared layout
 static/css/app.css  The one stylesheet
 ```

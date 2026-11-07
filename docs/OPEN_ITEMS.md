@@ -8,7 +8,7 @@ Decisions still needed, as of 2026-11-07. None of these blocks starting the buil
 | --- | --- | --- | --- |
 | Handling of Missing items | Treasurer | Admins can set the status. It blocks that seller's payout and closing the event. | Phase 5, and before the convention |
 | Handling of Error items | Treasurer | Set by check-in overrides. Blocks pickup of the item, that seller's payout and closing. | Phase 5, and before the convention |
-| Slip layout, field length limits and donate mark | Treasurer | Provisional layout and limits | End of Phase 2 |
+| Slip layout, field length limits and donate mark | Treasurer | Provisional layout, built in Phase 2: name 60 characters, publisher 40, description 300, condition details 100. Admins can print sample slips from the event page. | Before Presale |
 | Square export format and import | Treasurer | Reports list Sale IDs for manual matching | Phase 5 or later |
 | Rest of the Post-sale process | Treasurer | Reports and the payout outcomes in SPEC section 11 | Phase 5 or later |
 | Hosting budget and domain name | Board | Local development only | Before deployment |
@@ -47,3 +47,15 @@ These weren't explicitly decided. They were filled in while combining the docume
 | Staff accounts with neither role can't sign in | Sign-in |
 | Set-password and reset links work for 7 days | Emails |
 | Volunteers see seller names and IDs, but not emails or payment methods | Event sellers page |
+
+### Added during Phase 2
+
+| Assumption | Where |
+| --- | --- |
+| Slip size defaults to Large | Listing form |
+| Prices go up to $10,000, and bundles have 2 to 99 items | Listing form |
+| Changing only the BGG ID while reactivating keeps the slip valid, since it's never printed | Reactivation |
+| Choosing "make changes" and then saving with nothing changed keeps the slip valid | Reactivation |
+| Generating slips opens a PDF of just the new slips. Reprints are chosen by ticking games. | Seller's games page |
+| Admins can view a seller's games and their full history, but can't edit them | Seller admin page |
+| Volunteers with access to the event can view a game's history | Item page |

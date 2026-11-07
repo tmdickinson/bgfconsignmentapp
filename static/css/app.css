@@ -131,3 +131,12 @@ nav.tiles strong { display: block; font-size: 1.4rem; }
   .site-header { padding: 10px 16px; }
   table.list { display: block; overflow-x: auto; }
 }
+
+/* Listings */
+.muted { color: var(--muted); font-weight: 400; }
+.badge.ok { background: var(--ok-bg); border-color: var(--ok); color: var(--ok); }
+.price-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 0 16px; }
+.price-grid input { max-width: 10rem; }
+.row-actions { white-space: nowrap; }
+.row-actions > * { margin: 2px 0; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }

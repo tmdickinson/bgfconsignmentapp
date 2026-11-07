@@ -3,7 +3,7 @@
 {% block content %}
 <p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
 <h1>Price windows</h1>
-<p class="help">{% if locked %}Names and the number of windows are locked because items have been added. Scheduled times can always change.{% else %}Names and the number of windows lock once any item is added. Leave the blank row empty unless adding a window.{% endif %} Scheduled times only show warnings at the registers. An admin always chooses the active window.</p>
+<p class="help">{% if locked %}Names and the number of windows are locked because games have been listed. Scheduled times can always change.{% else %}Names and the number of windows lock once any item is added. Leave the blank row empty unless adding a window.{% endif %} Scheduled times only show warnings at the registers. An admin always chooses the active window.</p>
 <form method="post">{% csrf_token %}
   {{ formset.management_form }}
   {{ formset.non_form_errors }}

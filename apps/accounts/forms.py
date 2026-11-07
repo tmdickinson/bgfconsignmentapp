@@ -9,7 +9,8 @@ class LoginForm(forms.Form):
         label="Seller ID, Volunteer ID or email", max_length=254,
         widget=forms.TextInput(attrs={"autofocus": True, "autocomplete": "username"}),
     )
-    password = forms.CharField(widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}))
+    password = forms.CharField(
+        strip=False, widget=forms.PasswordInput(attrs={"autocomplete": "current-password"}))
 
 
 class ForgotPasswordForm(forms.Form):
@@ -17,10 +18,10 @@ class ForgotPasswordForm(forms.Form):
 
 
 class SetPasswordForm(forms.Form):
-    password1 = forms.CharField(label="New password", widget=forms.PasswordInput(
+    password1 = forms.CharField(strip=False, label="New password", widget=forms.PasswordInput(
         attrs={"autocomplete": "new-password"}),
         help_text="At least 10 characters, and not a common password.")
-    password2 = forms.CharField(label="New password again", widget=forms.PasswordInput(
+    password2 = forms.CharField(strip=False, label="New password again", widget=forms.PasswordInput(
         attrs={"autocomplete": "new-password"}))
 
     def __init__(self, *args, account=None, **kwargs):
@@ -38,7 +39,7 @@ class SetPasswordForm(forms.Form):
 
 
 class ChangePasswordForm(SetPasswordForm):
-    current = forms.CharField(label="Current password", widget=forms.PasswordInput)
+    current = forms.CharField(strip=False, label="Current password", widget=forms.PasswordInput)
     field_order = ["current", "password1", "password2"]
 
     def clean_current(self):
@@ -48,7 +49,7 @@ class ChangePasswordForm(SetPasswordForm):
 
 
 class PinForm(forms.Form):
-    current = forms.CharField(label="Your account password", widget=forms.PasswordInput)
+    current = forms.CharField(strip=False, label="Your account password", widget=forms.PasswordInput)
     pin = forms.RegexField(regex=r"^\d{4}$", label="New 4-digit PIN", max_length=4,
                            error_messages={"invalid": "Use exactly 4 digits."},
                            widget=forms.PasswordInput(attrs={"inputmode": "numeric"}))
@@ -73,7 +74,8 @@ class PinForm(forms.Form):
 
 class LinkSellerForm(forms.Form):
     seller_id = forms.CharField(label="Seller ID", max_length=12)
-    password = forms.CharField(label="That seller account's password", widget=forms.PasswordInput)
+    password = forms.CharField(strip=False, label="That seller account's password",
+                               widget=forms.PasswordInput)
 
 
 class StaffForm(forms.Form):

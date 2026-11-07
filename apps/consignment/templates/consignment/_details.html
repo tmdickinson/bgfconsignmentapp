@@ -1,0 +1,11 @@
+<dl class="facts">
+  <dt>Status</dt><dd>{{ listing.get_status_display }}</dd>
+  <dt>Publisher</dt><dd>{{ listing.publisher|default:"—" }}</dd>
+  <dt>Description</dt><dd>{{ listing.description|default:"—" }}</dd>
+  <dt>Condition</dt><dd>{{ listing.get_condition_display|default:"—" }}{% if listing.condition_note %}: {{ listing.condition_note }}{% endif %}</dd>
+  {% if listing.is_bundle %}<dt>Bundle</dt><dd>{{ listing.bundle_count|default:"?" }} items</dd>{% endif %}
+  <dt>Prices</dt><dd>{% for p in prices %}{{ p.window.name }} {% if p.dollars %}${{ p.dollars }}{% else %}—{% endif %}{% if not forloop.last %} · {% endif %}{% endfor %}</dd>
+  <dt>Slip</dt><dd>{{ listing.get_slip_size_display }}{% if listing.donate_if_unsold %} · Donate if not sold{% endif %}</dd>
+  {% if listing.bgg_id %}<dt>BGG ID</dt><dd><a href="https://boardgamegeek.com/boardgame/{{ listing.bgg_id }}" rel="noopener" target="_blank">{{ listing.bgg_id }}</a></dd>{% endif %}
+  <dt>Valid slip</dt><dd>{% if listing.current_slip %}<code>{{ listing.current_slip.item_id }}</code>{% else %}None{% endif %}</dd>
+</dl>

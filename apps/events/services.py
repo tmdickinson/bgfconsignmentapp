@@ -73,8 +73,9 @@ def update_event(actor, event, changes):
 
 def windows_locked(event):
     """Window count and names lock once any item is added (SPEC section 4)."""
-    # Listings arrive in Phase 2, which adds the check here.
-    return event.is_closed
+    from apps.consignment.models import Listing
+
+    return event.is_closed or Listing.objects.filter(seller__event=event).exists()
 
 
 def update_windows(actor, event, rows):

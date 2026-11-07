@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Reactivate {{ listing.name }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'accounts:seller_home' seller.pk %}">← My games</a></p>
+<h1>Reactivate {{ listing.name|default:"this game" }}</h1>
+<h2>Do you want to make changes?</h2>
+<div class="columns">
+  <section class="panel">
+    <h3>No changes</h3>
+    <p>{% if listing.current_slip %}Slip <code>{{ listing.current_slip.item_id }}</code> keeps working.{% else %}The game goes back to your active games.{% endif %}</p>
+    <form method="post">{% csrf_token %}<button class="primary big">Reactivate with no changes</button></form>
+  </section>
+  <section class="panel">
+    <h3>Make changes</h3>
+    <p>{% if listing.current_slip %}Any change to what's printed, however small, makes the old slip stop working. You'll generate and print a new one with a new Item ID.{% else %}Edit the game, then save to reactivate it.{% endif %}</p>
+    <a class="button big" href="{% url 'consignment:listing_edit' seller.pk listing.pk %}">Make changes</a>
+  </section>
+</div>
+{% endblock %}

@@ -208,7 +208,11 @@ def change_password(request):
 
 @seller_view
 def seller_home(request, seller):
-    return render(request, "accounts/seller_home.html", {"seller": seller, "event": seller.event})
+    from apps.consignment.views import seller_listings_context
+
+    return render(request, "accounts/seller_home.html", {
+        "seller": seller, "event": seller.event, **seller_listings_context(seller),
+        "new_slips_url": request.session.pop("new_slips_url", None)})
 
 
 @seller_view(rules_page=True)
@@ -334,5 +338,6 @@ def seller_edit(request, pk):
             else:
                 messages.success(request, "Saved.")
                 return redirect("accounts:seller_edit", pk=seller.pk)
-    return render(request, "accounts/seller_edit.html",
-                  {"form": form, "seller": seller, "event": seller.event})
+    return render(request, "accounts/seller_edit.html", {
+        "form": form, "seller": seller, "event": seller.event,
+        "listings": seller.listings.select_related("current_slip")})

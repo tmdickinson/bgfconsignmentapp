@@ -207,3 +207,13 @@ def test_next_url_must_be_on_this_site(client, volunteer):
     response = client.post(LOGIN + "?next=https://evil.example/",
                            {"identifier": volunteer.email, "password": PASSWORD})
     assert response.url == "/"
+
+
+@pytest.mark.django_db
+def test_password_spaces_are_kept(client, volunteer):
+    volunteer.set_password(" spaced password ")
+    volunteer.save()
+    sign_in(client, volunteer.email, "spaced password")
+    assert signed_in_as(client) is None
+    sign_in(client, volunteer.email, " spaced password ")
+    assert signed_in_as(client) == str(volunteer.pk)

@@ -1,16 +1,85 @@
 {% extends "base.html" %}
 {% block title %}{{ seller.seller_id }}{% endblock %}
 {% block content %}
-<h1>{{ seller.name }}</h1>
-<dl class="facts">
-  <dt>Seller ID</dt><dd><code>{{ seller.seller_id }}</code></dd>
-  <dt>Event</dt><dd>{{ event.name }}, {{ event.start_date|date:"M j" }}–{{ event.end_date|date:"M j, Y" }} <span class="badge status-{{ event.status }}">{{ event.get_status_display }}</span></dd>
-  <dt>Preferred payment</dt><dd>{{ seller.payment_method|default:"Not given" }}</dd>
-  {% if seller.logins_end_at %}<dt>Sign-in available until</dt><dd>{{ seller.logins_end_at|date:"M j, Y" }}</dd>{% endif %}
-</dl>
+<div class="title-row">
+  <h1>{{ seller.name }} <code class="muted">{{ seller.seller_id }}</code></h1>
+  <span class="badge big status-{{ event.status }}">{{ event.get_status_display }}</span>
+</div>
+<p>{{ event.name }}, {{ event.start_date|date:"M j" }}–{{ event.end_date|date:"M j, Y" }}{% if seller.logins_end_at %} · Sign-in available until {{ seller.logins_end_at|date:"M j, Y" }}{% endif %}</p>
+
+{% if new_slips_url %}
+  <div class="flash success"><a class="button primary" href="{{ new_slips_url }}" target="_blank">Open the new slips to print</a> Print at 100% / actual size, cut them out and attach one to each game.</div>
+{% endif %}
+
+{% if can_edit %}
 <section class="panel">
-  <h2>My games</h2>
-  <p>Listing games and printing slips will appear here.</p>
+  <div class="title-row">
+    <h2>My games</h2>
+    <a class="button primary" href="{% url 'consignment:listing_new' seller.pk %}">Add a game</a>
+  </div>
+  {% if needs_slip %}
+    {% if incomplete %}
+      <p>{{ needs_slip|length }} game{{ needs_slip|pluralize }} need{{ needs_slip|pluralize:"s," }} a slip. Finish or deactivate the {{ incomplete|length }} incomplete game{{ incomplete|pluralize }} below to generate slips.</p>
+    {% else %}
+      <form method="post" action="{% url 'consignment:slips_generate' seller.pk %}">{% csrf_token %}
+        <p>{{ needs_slip|length }} game{{ needs_slip|pluralize }} need{{ needs_slip|pluralize:"s," }} a slip.
+        <button class="primary">Generate slips</button></p>
+      </form>
+    {% endif %}
+  {% elif active %}
+    <p>Every active game has a valid slip.</p>
+  {% endif %}
 </section>
+{% else %}
+<h2>My games</h2>
+<p class="help">{% if event.status == "setup" %}Listing opens when the event moves to Presale.{% else %}Listings can no longer be changed.{% endif %}</p>
+{% endif %}
+
+{% if active %}
+<form method="get" action="{% url 'consignment:slips_print' seller.pk %}" target="_blank">
+<table class="list">
+  <thead><tr>{% if can_print %}<th><span class="sr-only">Print</span></th>{% endif %}<th>Game</th><th>Prices</th><th>Slip</th><th></th></tr></thead>
+  <tbody>
+  {% for listing in active %}
+  <tr>
+    {% if can_print %}<td>{% if listing.has_valid_slip %}<input type="checkbox" name="slip" value="{{ listing.current_slip_id }}" aria-label="Print {{ listing.name }}">{% endif %}</td>{% endif %}
+    <td><a href="{% url 'consignment:listing_detail' seller.pk listing.pk %}">{{ listing.name|default:"Untitled" }}</a>{% if listing.donate_if_unsold %} <span class="badge">Donate</span>{% endif %}{% if listing.is_bundle %} <span class="badge">Bundle</span>{% endif %}<br><span class="help">{{ listing.publisher }}</span></td>
+    <td>{% for p in listing.prices.all %}{{ p.window.name }} {% if p.dollars %}${{ p.dollars }}{% else %}—{% endif %}{% if not forloop.last %}<br>{% endif %}{% endfor %}</td>
+    <td>{% if listing.has_valid_slip %}<span class="badge ok">Valid</span> <code>{{ listing.current_slip.item_id }}</code>
+        {% elif listing.problems %}<span class="badge warning">Incomplete</span><br><span class="help">Needs {{ listing.problems|join:", " }}</span>
+        {% else %}<span class="badge">No valid slip</span>{% endif %}
+        {% if listing.status != "listed" %}<br><span class="badge">{{ listing.get_status_display }}</span>{% endif %}</td>
+    <td class="row-actions">
+      {% if can_edit and listing.status == "listed" and not listing.has_valid_slip %}<a class="button" href="{% url 'consignment:listing_edit' seller.pk listing.pk %}">Edit</a>{% endif %}
+    </td>
+  </tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% if can_print %}<p><button>Reprint ticked slips</button> <span class="help">Open a game to deactivate it.</span></p>{% endif %}
+</form>
+{% elif can_edit %}
+<p>No games yet. Add each game you'll bring, then generate and print its slip.</p>
+{% endif %}
+
+{% if deactivated %}
+<section class="panel">
+  <h2>Deactivated games</h2>
+  <p class="help">Not in your active games or slip generation. Kept with their history.</p>
+  <table class="list">
+    <thead><tr><th>Game</th><th>Slip</th><th></th></tr></thead>
+    <tbody>
+    {% for listing in deactivated %}
+    <tr class="inactive">
+      <td><a href="{% url 'consignment:listing_detail' seller.pk listing.pk %}">{{ listing.name|default:"Untitled" }}</a></td>
+      <td>{% if listing.current_slip %}<code>{{ listing.current_slip.item_id }}</code>{% else %}—{% endif %}</td>
+      <td>{% if can_edit %}<a class="button" href="{% url 'consignment:listing_reactivate' seller.pk listing.pk %}">Reactivate</a>{% endif %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endif %}
+
 <p><a href="{% url 'accounts:seller_rules' seller.pk %}">Selling rules and fees</a></p>
 {% endblock %}

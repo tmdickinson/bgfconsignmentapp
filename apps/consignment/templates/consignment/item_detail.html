@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}{{ listing.name|default:"Untitled game" }}{% endblock %}
+{% block content %}
+<p>{% if user.is_admin %}<a href="{% url 'accounts:seller_edit' seller.pk %}">← {{ seller.seller_id }} {{ seller.name }}</a>{% else %}<a href="{% url 'events:sellers' event.pk %}">← Sellers</a>{% endif %}</p>
+<h1>{{ listing.name|default:"Untitled game" }}</h1>
+<p>Seller <code>{{ seller.seller_id }}</code> {{ seller.name }} · {{ event.name }}</p>
+{% include "consignment/_details.html" %}
+{% include "consignment/_history.html" %}
+{% endblock %}

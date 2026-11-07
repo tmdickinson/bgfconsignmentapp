@@ -1,0 +1,25 @@
+{% load money %}
+<section class="panel">
+  <h2>Slip versions</h2>
+  {% if slips %}
+  <table class="list"><thead><tr><th>Item ID</th><th>Generated</th><th>Printed details</th><th>Prices</th><th>State</th></tr></thead><tbody>
+  {% for slip in slips %}
+    <tr class="{% if slip.invalidated_at %}inactive{% endif %}">
+      <td><code>{{ slip.item_id }}</code></td>
+      <td>{{ slip.generated_at|date:"M j, g:i A" }}</td>
+      <td>{{ slip.name }} · {{ slip.publisher }} · {{ slip.get_condition_display }}{% if slip.condition_note %} ({{ slip.condition_note }}){% endif %}{% if slip.bundle_count %} · Bundle of {{ slip.bundle_count }}{% endif %}{% if slip.donate_if_unsold %} · Donate{% endif %} · {{ slip.get_slip_size_display }}<br><span class="help">{{ slip.description }}</span></td>
+      <td>{% for p in slip.prices.all %}{{ p.window.name }} {{ p.price_cents|cents }}{% if not forloop.last %}<br>{% endif %}{% endfor %}</td>
+      <td>{% if slip.invalidated_at %}Outdated {{ slip.invalidated_at|date:"M j, g:i A" }}{% elif slip.pk == listing.current_slip_id %}<span class="badge ok">Valid</span>{% endif %}</td>
+    </tr>
+  {% endfor %}
+  </tbody></table>
+  {% else %}<p>No slips yet.</p>{% endif %}
+</section>
+<section class="panel">
+  <h2>Status history</h2>
+  <table class="list"><thead><tr><th>When</th><th>Change</th><th>By</th><th>Note</th></tr></thead><tbody>
+  {% for c in changes %}
+    <tr><td>{{ c.changed_at|date:"M j, g:i A" }}</td><td>{% if c.from_status %}{{ c.get_from_status_display }} → {% endif %}{{ c.get_to_status_display }}</td><td>{{ c.changed_by.display_name|default:"System" }}</td><td>{{ c.note }}</td></tr>
+  {% endfor %}
+  </tbody></table>
+</section>
