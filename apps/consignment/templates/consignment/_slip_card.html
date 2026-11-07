@@ -1,0 +1,10 @@
+{% load money %}
+<div class="slip-card{% if slip.donate_if_unsold %} donate{% endif %}">
+  <div class="title-row"><h2>{{ slip.name }}</h2><code class="big-code">{{ slip.item_id }}</code></div>
+  <p>{{ slip.publisher }}</p>
+  <p><strong>Condition: {{ slip.get_condition_display }}{% if slip.condition_note %}: {{ slip.condition_note }}{% endif %}</strong></p>
+  {% if slip.bundle_count %}<p><strong>Bundle of {{ slip.bundle_count }} items</strong></p>{% endif %}
+  <p>{{ slip.description }}</p>
+  <p class="prices">{% for p in slip.prices.all %}<span>{{ p.window.name }} <strong>{{ p.price_cents|cents }}</strong></span>{% endfor %}</p>
+  {% if slip.donate_if_unsold %}<p class="donate-mark">DONATE IF UNSOLD</p>{% endif %}
+</div>

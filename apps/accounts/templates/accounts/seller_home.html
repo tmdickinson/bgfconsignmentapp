@@ -81,5 +81,5 @@
 </section>
 {% endif %}
 
-<p><a href="{% url 'accounts:seller_rules' seller.pk %}">Selling rules and fees</a></p>
+<p>{% if seller.checkin_report.completed_at %}<a href="{% url 'consignment:seller_checkin_report' seller.pk %}">Check-in report</a> · {% endif %}<a href="{% url 'accounts:seller_rules' seller.pk %}">Selling rules and fees</a></p>
 {% endblock %}

@@ -1,5 +1,6 @@
 from django.contrib import messages
 from django.core.exceptions import PermissionDenied
+from django.db.models import Q
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -194,3 +195,43 @@ def item_detail(request, pk):
 @event_view
 def sample_slips_pdf(request, event):
     return _pdf(sample_slips(event), f"sample-slips-{event.code}.pdf")
+
+
+@event_view
+def event_items(request, event):
+    """Browse and search an event's games, grouped by seller."""
+    from apps.accounts.services import parse_seller_id
+
+    from .services.checkin import parse_item_id
+
+    q = request.GET.get("q", "").strip()
+    status = request.GET.get("status", "")
+    listings = (Listing.objects.filter(seller__event=event)
+                .select_related("seller__event", "accepted_slip", "current_slip")
+                .order_by("seller__number", "created_at"))
+    if status in ItemStatus.values:
+        listings = listings.filter(status=status)
+    if q:
+        if parsed := parse_item_id(event, q):
+            listings = listings.filter(slips__item_id=parsed[1])
+        elif (seller := parse_seller_id(q)) and seller[0] == event.code:
+            listings = listings.filter(seller__number=seller[1])
+        else:
+            listings = listings.filter(Q(name__icontains=q) | Q(publisher__icontains=q)
+                                       | Q(seller__name__icontains=q))
+    limit = 300
+    listings = list(listings.distinct()[:limit + 1])
+    return render(request, "consignment/items.html", {
+        "event": event, "listings": listings[:limit], "more": len(listings) > limit, "q": q,
+        "status": status, "statuses": ItemStatus.choices})
+
+
+@seller_view
+def seller_checkin_report(request, seller):
+    from .services.checkin import summary
+
+    data = summary(seller)
+    if not (data["report"] and data["report"].completed_at):
+        messages.info(request, "Your check-in report appears here after check-in.")
+        return _home(seller)
+    return render(request, "consignment/seller_checkin_report.html", {"seller": seller, **data})

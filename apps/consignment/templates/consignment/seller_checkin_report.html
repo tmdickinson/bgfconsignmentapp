@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}Check-in report{% endblock %}
+{% block content %}
+<p><a href="{% url 'accounts:seller_home' seller.pk %}">← My games</a></p>
+<h1>Check-in report</h1>
+<p>Seller <code>{{ seller.seller_id }}</code> {{ seller.name }}. Games can't be withdrawn after check-in.</p>
+{% include "consignment/_checkin_summary.html" %}
+{% endblock %}

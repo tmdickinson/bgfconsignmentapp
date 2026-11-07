@@ -1,5 +1,7 @@
 <fieldset class="override">
   <legend>Admin override</legend>
   {{ form.non_field_errors }}
-  {% for field in form %}{% include "core/field.html" %}{% endfor %}
+  {% include "core/field.html" with field=form.admin_badge %}
+  {% include "core/field.html" with field=form.admin_pin %}
+  {% include "core/field.html" with field=form.admin_note %}
 </fieldset>

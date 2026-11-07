@@ -19,7 +19,7 @@
   <h2>Status history</h2>
   <table class="list"><thead><tr><th>When</th><th>Change</th><th>By</th><th>Note</th></tr></thead><tbody>
   {% for c in changes %}
-    <tr><td>{{ c.changed_at|date:"M j, g:i A" }}</td><td>{% if c.from_status %}{{ c.get_from_status_display }} → {% endif %}{{ c.get_to_status_display }}</td><td>{{ c.changed_by.display_name|default:"System" }}</td><td>{{ c.note }}</td></tr>
+    <tr><td>{{ c.changed_at|date:"M j, g:i A" }}</td><td>{% if c.from_status %}{{ c.get_from_status_display }} → {% endif %}{{ c.get_to_status_display }}</td><td>{{ c.changed_by.display_name|default:"System" }}{% if c.approved_by_admin %}<br><span class="help">Approved by {{ c.approved_by_admin.display_name }}</span>{% endif %}</td><td>{{ c.note }}</td></tr>
   {% endfor %}
   </tbody></table>
 </section>

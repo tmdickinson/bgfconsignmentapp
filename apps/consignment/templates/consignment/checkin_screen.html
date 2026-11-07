@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Check-in {{ seller.seller_id }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'consignment:checkin_sellers' event.pk %}">← All sellers</a></p>
+<div class="title-row">
+  <h1>Check-in: <code>{{ seller.seller_id }}</code> {{ seller.name }}</h1>
+  <span class="counts"><strong>{{ checked_in|length }}</strong> checked in · <strong>{{ not_checked_in|length }}</strong> waiting</span>
+</div>
+
+{% if not slip or kind == "ok" %}
+<form method="post" class="scan-form">{% csrf_token %}
+  <input type="hidden" name="action" value="scan">
+  <label for="code">{% if slip %}Scan the next slip to accept this game{% else %}Scan a slip{% endif %}</label>
+  <input id="code" name="code" autofocus autocomplete="off" placeholder="Item ID, such as {{ event.code }}-001-0001 or 001-0001" class="scan">
+  <button class="primary big">Enter</button>
+</form>
+{% endif %}
+
+{% if slip %}
+<section class="panel pending {{ kind }}">
+  {% if kind == "ok" %}
+    <p class="help">Compare the slip and the game with what's shown. If anything doesn't match, reject it.</p>
+    {% include "consignment/_slip_card.html" %}
+    <form method="post" class="reject">{% csrf_token %}
+      <input type="hidden" name="action" value="reject">
+      <input name="reason" placeholder="Reason, such as wrong game or missing pieces" maxlength="500" required>
+      <button class="danger">Reject</button>
+    </form>
+
+  {% elif kind == "checked_in" %}
+    <div class="flash error"><strong>{{ slip.item_id }} is already checked in.</strong> Its game is {{ slip.listing.get_status_display }}. What happened?</div>
+    {% include "consignment/_slip_card.html" %}
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="double">
+      <button class="big">Double scanned item</button> <span class="help">The same game was scanned twice. Nothing changes.</span></form>
+    <details {% if dup_form.errors %}open{% endif %}><summary>Two games with one slip</summary>
+      <p>Set both games aside for an admin, who decides which game has the correct slip. The other goes back to the seller.</p>
+      <form method="post">{% csrf_token %}<input type="hidden" name="action" value="duplicate">
+        {% include "core/field.html" with field=dup_form.correct_game %}
+        {% include "core/override_fields.html" with form=dup_form only %}
+        <button class="primary">Record the admin's decision</button></form>
+    </details>
+    <details {% if ovr_form.errors %}open{% endif %}><summary>Something else</summary>
+      <p>Check-in for this game stops until an admin investigates.</p>
+      <form method="post">{% csrf_token %}<input type="hidden" name="action" value="override">
+        {% include "core/field.html" with field=ovr_form.outcome %}
+        {% include "core/override_fields.html" with form=ovr_form only %}
+        <button class="primary">Record the override</button></form>
+    </details>
+
+  {% else %}
+    <div class="flash warning"><strong>
+      {% if kind == "outdated" %}This slip is outdated. The seller changed the listing after printing it.
+      {% elif kind == "deactivated" %}This game's listing is deactivated.
+      {% else %}This slip is outdated, and the game's listing is deactivated.{% endif %}</strong>
+      Check with the seller. If they agree and the slip's information is accurate, accept it on the slip's information{% if kind != "outdated" %}, which reactivates the listing{% endif %}.
+    </div>
+    {% include "consignment/_slip_card.html" %}
+    <table class="list compare">
+      <thead><tr><th></th><th>On this slip</th><th>Latest listing</th></tr></thead>
+      <tbody>
+        <tr><th>Condition</th><td>{{ comparison.slip_condition.0 }}{% if comparison.slip_condition.1 %}: {{ comparison.slip_condition.1 }}{% endif %}</td>
+          <td>{{ comparison.latest_condition.0|default:"—" }}{% if comparison.latest_condition.1 %}: {{ comparison.latest_condition.1 }}{% endif %}</td></tr>
+        {% for name, slip_cents, latest_cents in comparison.prices %}
+        <tr class="{% if slip_cents != latest_cents %}differs{% endif %}"><th>{{ name }}</th><td>{{ slip_cents|cents }}</td><td>{{ latest_cents|cents|default:"—" }}</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="actions">
+      <form method="post">{% csrf_token %}<input type="hidden" name="action" value="confirm">
+        <button class="primary big">Seller agrees, slip is accurate: accept</button></form>
+      <form method="post" class="reject">{% csrf_token %}<input type="hidden" name="action" value="reject">
+        <input name="reason" placeholder="Reason" maxlength="500" required><button class="danger">Reject</button></form>
+    </div>
+  {% endif %}
+</section>
+{% endif %}
+
+{% if not slip or kind == "ok" %}
+<form method="post">{% csrf_token %}<input type="hidden" name="action" value="finish">
+  <button class="primary big">Confirm Check-in</button>
+  <span class="help">{% if slip %}Accepts the game shown and {% endif %}shows the report.</span>
+</form>
+{% endif %}
+
+{% if errors %}
+<section class="panel"><h2>Errors so far</h2>{% include "consignment/_checkin_errors.html" %}</section>
+{% endif %}
+{% endblock %}

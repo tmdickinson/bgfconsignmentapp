@@ -51,11 +51,27 @@ class Listing(models.Model):
     current_slip = models.OneToOneField(
         "SlipVersion", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
     )
+    # The slip version accepted at check-in. Checkout uses it, never the seller's later edits.
+    accepted_slip = models.OneToOneField(
+        "SlipVersion", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    # Set once and never cleared. Fees count on it.
+    checked_in_at = models.DateTimeField(null=True, blank=True)
+    checked_in_by = models.ForeignKey(
+        "accounts.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
     created_at = models.DateTimeField(default=timezone.now)
     updated_at = models.DateTimeField(default=timezone.now)
 
     class Meta:
         ordering = ["seller", "created_at", "id"]
+        constraints = [
+            models.CheckConstraint(
+                condition=models.Q(checked_in_at__isnull=True, accepted_slip__isnull=True)
+                | models.Q(checked_in_at__isnull=False, accepted_slip__isnull=False),
+                name="checked_in_listing_has_accepted_slip",
+            ),
+        ]
 
     def __str__(self):
         return self.name or f"Listing {self.pk}"
@@ -67,6 +83,16 @@ class Listing(models.Model):
     @property
     def has_valid_slip(self):
         return self.current_slip_id is not None
+
+    @property
+    def is_checked_in(self):
+        return self.checked_in_at is not None
+
+    @property
+    def item_id(self):
+        """The ID the game is known by: the accepted slip once checked in, else the current one."""
+        slip = self.accepted_slip if self.accepted_slip_id else self.current_slip
+        return slip.item_id if slip else ""
 
 
 class ListingPrice(models.Model):
@@ -167,6 +193,60 @@ class ItemStatusChange(models.Model):
     )
     changed_at = models.DateTimeField(default=timezone.now)
     note = models.CharField(max_length=500, blank=True)
+    approved_by_admin = models.ForeignKey(
+        "accounts.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
 
     class Meta:
         ordering = ["changed_at", "id"]
+
+
+class CheckinReport(models.Model):
+    """A seller's check-in record. Resumed if the seller comes back with more games."""
+
+    seller = models.OneToOneField("accounts.Seller", on_delete=models.PROTECT,
+                                  related_name="checkin_report")
+    started_by = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="+")
+    started_at = models.DateTimeField(default=timezone.now)
+    completed_by = models.ForeignKey(
+        "accounts.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+
+class CheckinOutcome(models.TextChoices):
+    ACCEPTED = "accepted", "Checked in"
+    REJECTED = "rejected", "Rejected"
+    NOT_FOUND = "not_found", "Barcode not found"
+    WRONG_EVENT = "wrong_event", "Belongs to another event"
+    OTHER_SELLER = "other_seller", "Belongs to another seller"
+    OUTDATED_ACCEPTED = "outdated_accepted", "Outdated slip accepted"
+    REACTIVATED = "reactivated", "Deactivated game reactivated"
+    DOUBLE_SCAN = "double_scan", "Double scanned"
+    DUPLICATE_SLIP = "duplicate_slip", "Two games with one slip"
+    OVERRIDE = "override", "Admin override"
+
+
+class CheckinEntry(models.Model):
+    """One scan or decision during check-in. Errors and overrides appear on the report."""
+
+    report = models.ForeignKey(CheckinReport, on_delete=models.PROTECT, related_name="entries")
+    scanned_code = models.CharField(max_length=40)
+    listing = models.ForeignKey(Listing, null=True, blank=True, on_delete=models.PROTECT,
+                                related_name="checkin_entries")
+    slip = models.ForeignKey(SlipVersion, null=True, blank=True, on_delete=models.PROTECT,
+                             related_name="+")
+    outcome = models.CharField(max_length=20, choices=CheckinOutcome.choices)
+    reason = models.CharField(max_length=500, blank=True)
+    approved_by_admin = models.ForeignKey(
+        "accounts.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    created_by = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+    @property
+    def is_error(self):
+        return self.outcome != CheckinOutcome.ACCEPTED

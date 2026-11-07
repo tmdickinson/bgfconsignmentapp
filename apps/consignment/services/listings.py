@@ -39,9 +39,11 @@ def can_print(seller):
     return seller.event.status in (Status.PRESALE, Status.CHECKIN)
 
 
-def set_status(listing, to_status, actor, note=""):
+def set_status(listing, to_status, actor, note="", admin=None):
+    """Record a status change. `admin` is who approved it, for overrides."""
     ItemStatusChange.objects.create(listing=listing, from_status=listing.status,
-                                    to_status=to_status, changed_by=actor, note=note)
+                                    to_status=to_status, changed_by=actor, note=note,
+                                    approved_by_admin=admin)
     listing.status = to_status
 
 

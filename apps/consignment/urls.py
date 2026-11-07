@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import views
+from . import checkin_views, views
 
 app_name = "consignment"
 
@@ -14,6 +14,14 @@ urlpatterns = [
          name="listing_reactivate"),
     path("seller/<int:seller_pk>/slips/generate/", views.slips_generate, name="slips_generate"),
     path("seller/<int:seller_pk>/slips/print/", views.slips_print, name="slips_print"),
+    path("seller/<int:seller_pk>/check-in/", views.seller_checkin_report,
+         name="seller_checkin_report"),
     path("items/<int:pk>/", views.item_detail, name="item_detail"),
+    path("events/<int:event_pk>/items/", views.event_items, name="event_items"),
     path("events/<int:event_pk>/sample-slips.pdf", views.sample_slips_pdf, name="sample_slips"),
+    path("events/<int:event_pk>/check-in/", checkin_views.checkin_sellers, name="checkin_sellers"),
+    path("events/<int:event_pk>/check-in/<int:seller_pk>/", checkin_views.checkin_screen,
+         name="checkin_screen"),
+    path("events/<int:event_pk>/check-in/<int:seller_pk>/report/", checkin_views.checkin_report,
+         name="checkin_report"),
 ]

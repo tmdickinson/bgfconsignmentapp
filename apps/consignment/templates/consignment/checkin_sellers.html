@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Check-in for {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Check-in</h1>
+{% if not open %}<div class="flash warning">Check-in opens when the event moves to Check-in. It's now in {{ event.get_status_display }}.</div>{% endif %}
+<form method="get" class="search">
+  <input type="search" name="q" value="{{ q }}" placeholder="Seller ID or name" autofocus autocomplete="off">
+  <button class="primary">Find seller</button>
+</form>
+<table class="list">
+  <thead><tr><th>Seller</th><th>Name</th><th>Waiting</th><th>Checked in</th><th></th></tr></thead>
+  <tbody>
+  {% for s, own in rows %}
+  <tr>
+    <td><code>{{ s.seller_id }}</code></td><td>{{ s.name }}</td><td>{{ s.listed }}</td><td>{{ s.checked_in }}</td>
+    <td>{% if own %}<span class="help">Your own games. Another volunteer must check them in.</span>{% elif open %}<a class="button primary" href="{% url 'consignment:checkin_screen' event.pk s.pk %}">Check in</a>{% endif %}</td>
+  </tr>
+  {% empty %}<tr><td colspan="5">No sellers{% if q %} match{% endif %}.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

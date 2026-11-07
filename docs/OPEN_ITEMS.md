@@ -29,8 +29,8 @@ These weren't explicitly decided. They were filled in while combining the docume
 | A seller can take back an Abandoned game if they arrive late, with the same fee | SPEC section 11 |
 | An open Sold flag blocks that seller's payout and closing | SPEC section 11 |
 | Volunteers can see past events they had access to only for their linked seller account, within its 30 days | Not stated in SPEC. Built this way in Phase 1. |
-| If a seller returns after Check-in Complete, a volunteer can resume, and the report is updated | Not stated in SPEC. To confirm during Phase 3. |
-| A scan of another seller's item during a check-in is an error and isn't accepted | Not stated in SPEC. To confirm during Phase 3. |
+| If a seller returns after Check-in Complete, a volunteer can resume, and the report is updated | Not stated in SPEC. Built this way in Phase 3. |
+| A scan of another seller's item during a check-in is an error and isn't accepted | Not stated in SPEC. Built this way in Phase 3. |
 | One active event at a time is the normal case, though nothing prevents more | Not stated in SPEC. Built this way in Phase 1. |
 
 ### Added during Phase 1
@@ -59,3 +59,14 @@ These weren't explicitly decided. They were filled in while combining the docume
 | Generating slips opens a PDF of just the new slips. Reprints are chosen by ticking games. | Seller's games page |
 | Admins can view a seller's games and their full history, but can't edit them | Seller admin page |
 | Volunteers with access to the event can view a game's history | Item page |
+
+### Added during Phase 3
+
+| Assumption | Where |
+| --- | --- |
+| Check-in runs only while the event is in Check-in, for admins as well as volunteers | Check-in |
+| The game shown and waiting for the next scan is held in the volunteer's browser. If they leave the screen, it stays Listed until scanned again. | Check-in screen |
+| For two games with one slip, the admin's decision is recorded and the listing stays checked in. The game without the listing goes back to the seller. | Check-in screen |
+| For any other scan of a checked-in game, the admin either leaves its status as it is or sets it to Error. The spec says "Available or Error", which is the same for an Available game. | Check-in screen |
+| Typed Item IDs may leave out leading zeros, such as `F26A-1-2` or `1-2` | Scanning |
+| Volunteers can browse and search every game in events they can access | Games page |

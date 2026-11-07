@@ -8,4 +8,5 @@
   <dt>Slip</dt><dd>{{ listing.get_slip_size_display }}{% if listing.donate_if_unsold %} · Donate if not sold{% endif %}</dd>
   {% if listing.bgg_id %}<dt>BGG ID</dt><dd><a href="https://boardgamegeek.com/boardgame/{{ listing.bgg_id }}" rel="noopener" target="_blank">{{ listing.bgg_id }}</a></dd>{% endif %}
   <dt>Valid slip</dt><dd>{% if listing.current_slip %}<code>{{ listing.current_slip.item_id }}</code>{% else %}None{% endif %}</dd>
+  {% if listing.checked_in_at %}<dt>Checked in</dt><dd><code>{{ listing.accepted_slip.item_id }}</code> accepted {{ listing.checked_in_at|date:"M j, g:i A" }} by {{ listing.checked_in_by.display_name }}. Checkout uses this slip's details and prices.</dd>{% endif %}
 </dl>

@@ -1,0 +1,16 @@
+<dl class="facts">
+  <dt>Checked in</dt><dd><strong>{{ checked_in|length }}</strong> game{{ checked_in|pluralize }}</dd>
+  <dt>Not checked in</dt><dd>{{ not_checked_in|length }} game{{ not_checked_in|pluralize }}, still Listed</dd>
+  {% if report.completed_at %}<dt>Completed</dt><dd>{{ report.completed_at|date:"M j, Y g:i A" }}</dd>{% endif %}
+</dl>
+{% if checked_in %}
+<h2>Checked in</h2>
+<table class="list"><thead><tr><th>Item ID</th><th>Game</th><th>Status</th></tr></thead><tbody>
+{% for lst in checked_in %}<tr><td><code>{{ lst.accepted_slip.item_id }}</code></td><td>{{ lst.accepted_slip.name }}</td><td>{{ lst.get_status_display }}</td></tr>{% endfor %}
+</tbody></table>
+{% endif %}
+{% if not_checked_in %}
+<h2>Not checked in</h2>
+<ul>{% for lst in not_checked_in %}<li>{{ lst.name|default:"Untitled" }}{% if lst.current_slip %} <code>{{ lst.current_slip.item_id }}</code>{% endif %}</li>{% endfor %}</ul>
+{% endif %}
+{% if errors %}<h2>Errors and their outcomes</h2>{% include "consignment/_checkin_errors.html" %}{% endif %}
