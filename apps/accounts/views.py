@@ -147,10 +147,13 @@ def home(request):
         events = Event.objects.filter(staff_access__staff=user.staff,
                                       staff_access__revoked_at__isnull=True).exclude(
             status="postsale").distinct()
+    from apps.consignment.services.alerts import open_alert_count
+
     reminders = [(e, r) for e in events for r in due_reminders(e)] if user.is_admin else []
+    alerts = [(e, n) for e in events if (n := open_alert_count(e))]
     linked = Seller.objects.filter(linked_staff=user.staff).select_related("event")
     return render(request, "accounts/staff_home.html", {
-        "events": events, "reminders": reminders,
+        "events": events, "reminders": reminders, "alerts": alerts,
         "linked": [s for s in linked if not s.login_expired or user.is_admin],
     })
 

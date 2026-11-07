@@ -1,0 +1,7 @@
+{% if moved %}<div class="flash error"><strong>This sale moved to register {{ checkout.register.name }}.</strong> This register can't change it.</div>{% endif %}
+{% for c in conflicts %}
+  <div class="flash error conflict" role="alert"><strong>Two-register conflict: {{ c.listing.name }}.</strong>
+    It's in {{ c.holding_checkout.owner.display_name }}'s sale at {{ c.holding_checkout.register.name }} and was scanned at {{ c.scanning_checkout.register.name }}. Neither register can take payment until an admin resolves it on the <a href="{% url 'consignment:alerts' event.pk %}">alerts page</a>.</div>
+{% endfor %}
+{% if warning %}<div class="flash warning">{{ warning }}</div>{% endif %}
+{% if closed_reason and not checkout.is_admin_cart %}<div class="flash warning">{{ closed_reason }}</div>{% endif %}

@@ -186,9 +186,14 @@ def item_detail(request, pk):
                                 pk=pk)
     if not (request.user.is_staff_member and can_access_event(request.user, listing.seller.event)):
         raise PermissionDenied
+    from .models import ACTIVE_STATES
+
+    held = (listing.checkout_lines.filter(checkout__state__in=ACTIVE_STATES,
+                                          released_at__isnull=True)
+            .select_related("checkout__owner", "checkout__register").first())
     return render(request, "consignment/item_detail.html", {
         "listing": listing, "seller": listing.seller, "event": listing.seller.event,
-        **_history(listing)})
+        "held": held, **_history(listing)})
 
 
 @admin_required

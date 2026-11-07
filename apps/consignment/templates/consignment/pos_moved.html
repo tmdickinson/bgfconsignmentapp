@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+{% block title %}Sale moved{% endblock %}
+{% block content %}
+<div class="narrow">
+  <h1>Your sale moved</h1>
+  <p>Your open sale{% if checkout.sale_id %} {{ checkout.sale_id }}{% endif %} is now at register <strong>{{ checkout.register.name }}</strong>, where you signed in. This register, {{ register.name }}, can't change it.</p>
+  <p>To use this register, finish the sale there first.</p>
+</div>
+{% endblock %}

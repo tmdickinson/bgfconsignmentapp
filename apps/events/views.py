@@ -60,8 +60,11 @@ def event_new(request):
 
 @event_view
 def event_detail(request, event):
+    from apps.consignment.services.alerts import open_alert_count
+
     context = {"event": event, "windows": event.windows.all(),
-               "schedule": event.schedule.all(), "seller_count": event.sellers.count()}
+               "schedule": event.schedule.all(), "seller_count": event.sellers.count(),
+               "alert_count": open_alert_count(event)}
     if request.user.is_admin:
         context.update(
             reminders=services.due_reminders(event),

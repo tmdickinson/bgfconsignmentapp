@@ -1,0 +1,9 @@
+{% load money %}
+<div class="pos-header">
+  <div><span class="help">Register</span><strong>{{ register.name }}</strong> <a class="help" href="{% url 'consignment:choose_register' event.pk %}">change</a></div>
+  <div class="window"><span class="help">{% if checkout.is_admin_cart %}Admin cart pricing{% else %}Active price window{% endif %}</span>
+    <strong>{% if checkout.is_admin_cart %}{% if checkout.pricing_mode == "per_item" %}Chosen per game{% else %}{{ checkout.window.name }}{% endif %}{% else %}{{ event.active_window.name|default:"None" }}{% endif %}</strong></div>
+  <div><span class="help">Items</span><strong class="big-number">{{ count }}</strong></div>
+  <div><span class="help">Total</span><strong class="big-number">{{ total|cents }}</strong></div>
+</div>
+<div hx-get="{% url 'consignment:pos_status' event.pk %}" hx-trigger="every 2s" hx-swap="innerHTML">{% include "consignment/_pos_status.html" %}</div>

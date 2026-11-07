@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Choose register{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Which register is this laptop?</h1>
+<p class="help">The laptop remembers its register. Choose again only if it moves to another table.{% if current %} It's now <strong>{{ current.name }}</strong>.{% endif %}</p>
+{% if registers %}
+<form method="post">{% csrf_token %}
+  {% for r in registers %}
+    <button class="choice big" name="register" value="{{ r.pk }}">{{ r.name }}{% if r.open %} <span class="badge">sale open</span>{% endif %}{% if r.pk == current.pk %} <span class="badge ok">this laptop</span>{% endif %}</button>
+  {% endfor %}
+</form>
+{% else %}<p>No registers yet.{% if not user.is_admin %} Ask an admin to add them.{% endif %}</p>{% endif %}
+{% if user.is_admin %}
+<form method="post" class="search">{% csrf_token %}
+  <input name="new_name" placeholder="New register name, such as Register 3" maxlength="40" required>
+  <button>Add and use on this laptop</button>
+</form>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Sales for {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Sales</h1>
+<p>{{ totals.n }} completed, {{ totals.total|default:0|cents }} in total.</p>
+<form method="get" class="search">
+  <input type="search" name="q" value="{{ q }}" placeholder="Sale ID" autofocus>
+  <label class="checkbox"><input type="checkbox" name="admin" value="1"{% if admin_only %} checked{% endif %}> Admin carts only</label>
+  <button>Search</button>
+</form>
+<table class="list">
+  <thead><tr><th>Sale ID</th><th>State</th><th>Kind</th><th>Staff</th><th>Register</th><th>Items</th><th class="num">Total</th><th>When</th></tr></thead>
+  <tbody>
+  {% for s in sales %}
+    <tr><td><a href="{% url 'consignment:sale_detail' event.pk s.pk %}"><code>{{ s.sale_id }}</code></a></td><td>{{ s.get_state_display }}</td>
+      <td>{{ s.get_kind_display }}{% if s.opened_by_admin %}<br><span class="help">by {{ s.opened_by_admin.display_name }}</span>{% endif %}</td>
+      <td>{{ s.owner.display_name }}</td><td>{{ s.register.name }}</td><td>{{ s.items }}</td><td class="num">{{ s.total_cents|cents }}</td>
+      <td>{{ s.paid_at|default:s.proceeded_at|date:"D g:i A" }}</td></tr>
+  {% empty %}<tr><td colspan="8">No sales{% if q %} match{% endif %}.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

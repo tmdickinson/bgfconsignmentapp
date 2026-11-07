@@ -160,3 +160,18 @@ table.compare tr.differs td { background: var(--warn-bg); font-weight: 600; }
 details { margin: 12px 0; }
 summary { cursor: pointer; font-weight: 600; min-height: var(--tap); display: flex; align-items: center; }
 tr.group th { background: var(--background); color: var(--text); font-size: 0.95rem; }
+
+/* Register */
+.pos-header { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 8px 0 12px; }
+.pos-header > div { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 8px 14px; }
+.pos-header .help { display: block; margin: 0; }
+.pos-header strong { font-size: 1.3rem; }
+.pos-header .window { border-color: var(--brand); border-width: 2px; }
+.big-number { font-size: 1.8rem !important; }
+.sale-id { font: 700 3rem/1.1 ui-monospace, Consolas, monospace; letter-spacing: 0.08em; margin: 8px 0; }
+.facts.big { font-size: 1.3rem; }
+.restock strong { font-size: 1.2rem; }
+td.num, th.num { text-align: right; }
+table.cart td { font-size: 1.05rem; }
+.flash.conflict { font-size: 1.1rem; border-width: 2px; }
+label.checkbox { display: flex; align-items: center; gap: 6px; }

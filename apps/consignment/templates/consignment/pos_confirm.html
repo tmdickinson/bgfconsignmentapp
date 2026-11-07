@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Confirm{% endblock %}
+{% block content %}
+<div class="narrow">
+{% if action == "paid" %}
+  <h1>Payment received?</h1>
+  <p>Confirm that Square shows payment of <strong>{{ checkout.total_cents|cents }}</strong> for sale <strong>{{ checkout.sale_id }}</strong>. The sale is then final.</p>
+  <form method="post">{% csrf_token %}<button class="primary big">Yes, payment received</button></form>
+{% else %}
+  <h1>Cancel this sale?</h1>
+  <p>{% if checkout.sale_id %}Sale <strong>{{ checkout.sale_id }}</strong> stays in history as canceled. {% endif %}Every game in it goes back on sale. Put them all back on the tables.</p>
+  <form method="post">{% csrf_token %}<button class="danger big">Yes, cancel the sale</button></form>
+{% endif %}
+  <p><a class="button big" href="{% url 'consignment:pos' event.pk %}">No, go back</a></p>
+</div>
+{% endblock %}

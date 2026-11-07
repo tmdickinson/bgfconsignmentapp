@@ -25,7 +25,7 @@ These weren't explicitly decided. They were filled in while combining the docume
 | Volunteer ID digits are random from 2–9, in line with the character rules, and a different pair is drawn if the ID is taken | SPEC section 3 |
 | Staff sign in with Volunteer ID or email. Admins without a Volunteer ID use email. | SPEC section 2 |
 | An item removed by mistake can be scanned back into the same cart before the Sale ID | SPEC section 10 |
-| A volunteer in a two-register conflict can still cancel their own sale | Not stated in SPEC. To confirm during Phase 4. |
+| A volunteer in a two-register conflict can still cancel their own sale | Not stated in SPEC. Built this way in Phase 4. |
 | A seller can take back an Abandoned game if they arrive late, with the same fee | SPEC section 11 |
 | An open Sold flag blocks that seller's payout and closing | SPEC section 11 |
 | Volunteers can see past events they had access to only for their linked seller account, within its 30 days | Not stated in SPEC. Built this way in Phase 1. |
@@ -70,3 +70,19 @@ These weren't explicitly decided. They were filled in while combining the docume
 | For any other scan of a checked-in game, the admin either leaves its status as it is or sets it to Error. The spec says "Available or Error", which is the same for an Available game. | Check-in screen |
 | Typed Item IDs may leave out leading zeros, such as `F26A-1-2` or `1-2` | Scanning |
 | Volunteers can browse and search every game in events they can access | Games page |
+
+### Added during Phase 4
+
+| Assumption | Where |
+| --- | --- |
+| Admins name each event's registers. Each laptop chooses its register once and remembers it. | Registers |
+| A register with another volunteer's open sale can't be used for a new sale until that one finishes | Registers |
+| After a sale moves, the old register only shows where it went. Moving it back means signing in again there. | Registers |
+| Admins can set the active window during Check-in, ahead of Sale, as well as during Sale. Any window can be chosen, not only the next. Choosing one after the last window closed reopens regular checkout. | Sales control |
+| One active cart per person, counting regular and admin carts together | Registers |
+| Only the slip version accepted at check-in scans at a register | Scanning |
+| When an admin gives a conflicted game to the second sale, the volunteer scans it again to add it | Register alerts |
+| A completed sale returned to payment by an override is finished on the admin's sale page, not at a register | Sales |
+| Admins close Sold flags and conflicts on the register alerts page with badge and PIN, even when signed in | Register alerts |
+| A failed first scan doesn't leave an empty cart open. The empty cart is kept as canceled. | Registers |
+| The check that blocks a sale override after a payout is connected in Phase 5, when payouts exist | Sales |

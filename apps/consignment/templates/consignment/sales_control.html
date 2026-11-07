@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Sales control for {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Sales control</h1>
+{% if warning %}<div class="flash warning">{{ warning }}</div>{% endif %}
+
+<section class="panel">
+  <h2>Price window</h2>
+  <p>Active: <strong class="big-number">{{ event.active_window.name|default:"None" }}</strong>{% if event.last_window_closed_at %} · The last window closed {{ event.last_window_closed_at|date:"M j, g:i A" }}.{% endif %}</p>
+  {% if regular_open %}<div class="flash warning">Regular carts are open, so the window can't change. Wait for them to finish or cancel stuck ones below.</div>{% endif %}
+  <table class="list"><thead><tr><th>Window</th><th>Scheduled</th><th>Opened</th><th></th></tr></thead><tbody>
+  {% for w in windows %}
+    <tr><td>{{ w.name }}</td><td>{{ w.scheduled_start|date:"D g:i A"|default:"—" }} to {{ w.scheduled_end|date:"D g:i A"|default:"—" }}</td><td>{{ w.opened_at|date:"D g:i A"|default:"—" }}</td>
+      <td>{% if w.pk == event.active_window_id %}<span class="badge ok">Active</span>{% if is_last %}
+          <form method="post" class="inline" onsubmit="return confirm('Close the last window? Regular checkout ends.')">{% csrf_token %}<button name="action" value="close_last"{% if regular_open %} disabled{% endif %}>Close last window</button></form>{% endif %}
+        {% elif event.status == "checkin" or event.status == "sale" %}
+          <form method="post" class="inline">{% csrf_token %}<input type="hidden" name="window" value="{{ w.pk }}"><button name="action" value="activate"{% if regular_open %} disabled{% endif %}>Make active</button></form>{% endif %}</td></tr>
+  {% endfor %}
+  </tbody></table>
+</section>
+
+<section class="panel">
+  <h2>Open carts</h2>
+  <table class="list"><thead><tr><th>Owner</th><th>Register</th><th>Kind</th><th>Items</th><th>State</th><th>Started</th><th></th></tr></thead><tbody>
+  {% for c in carts %}
+    <tr><td>{{ c.owner.display_name }}</td><td>{{ c.register.name }}</td><td>{{ c.get_kind_display }}</td><td>{{ c.items }}</td>
+      <td>{{ c.get_state_display }}{% if c.sale_id %} <code>{{ c.sale_id }}</code>{% endif %}</td><td>{{ c.created_at|date:"g:i A" }}</td>
+      <td><form method="post" onsubmit="return confirm('Cancel this cart? Its games go back on sale.')">{% csrf_token %}<input type="hidden" name="checkout" value="{{ c.pk }}"><button class="danger" name="action" value="cancel_cart">Cancel</button></form></td></tr>
+  {% empty %}<tr><td colspan="7">None.</td></tr>
+  {% endfor %}
+  </tbody></table>
+</section>
+
+<section class="panel">
+  <h2>Admin cart</h2>
+  <p class="help">For purchases outside the regular windows. It's listed on the admin-cart report with you as the admin who authorized it.</p>
+  {% if not modes %}<p>Admin carts are available during Check-in, Sale and Pickup.</p>
+  {% elif not register %}<p><a href="{% url 'consignment:choose_register' event.pk %}">Choose this laptop's register</a> first.</p>
+  {% else %}
+  {% for mode, mode_windows in modes %}
+    <form method="post" class="search">{% csrf_token %}<input type="hidden" name="action" value="admin_cart"><input type="hidden" name="mode" value="{{ mode }}">
+      {% if mode == "chosen" %}
+        <select name="window" required>{% for w in mode_windows %}<option value="{{ w.pk }}">{{ w.name }}</option>{% endfor %}</select>
+        <button class="primary">Open with one window for the whole sale</button>
+      {% else %}<button class="primary">Open with a window chosen per game</button>{% endif %}
+    </form>
+  {% endfor %}
+  <p class="help">Opens on this laptop's register, {{ register.name }}.</p>
+  {% endif %}
+</section>
+
+<section class="panel">
+  <h2>Registers</h2>
+  <p>{% for r in registers %}{{ r.name }}{% if not forloop.last %}, {% endif %}{% empty %}None yet.{% endfor %}</p>
+  <p><a href="{% url 'consignment:choose_register' event.pk %}">Add a register or set this laptop's</a></p>
+</section>
+{% endblock %}

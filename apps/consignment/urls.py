@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import checkin_views, views
+from . import checkin_views, pos_views, views
 
 app_name = "consignment"
 
@@ -24,4 +24,15 @@ urlpatterns = [
          name="checkin_screen"),
     path("events/<int:event_pk>/check-in/<int:seller_pk>/report/", checkin_views.checkin_report,
          name="checkin_report"),
+    path("events/<int:event_pk>/register/", pos_views.pos, name="pos"),
+    path("events/<int:event_pk>/register/choose/", pos_views.choose_register,
+         name="choose_register"),
+    path("events/<int:event_pk>/register/status/", pos_views.pos_status, name="pos_status"),
+    path("events/<int:event_pk>/register/<slug:action>/", pos_views.pos_confirm,
+         name="pos_confirm"),
+    path("events/<int:event_pk>/alerts/", pos_views.alerts, name="alerts"),
+    path("events/<int:event_pk>/sales/control/", pos_views.sales_control, name="sales_control"),
+    path("events/<int:event_pk>/sales/", pos_views.sales_list, name="sales_list"),
+    path("events/<int:event_pk>/sales/<int:pk>/", pos_views.sale_detail, name="sale_detail"),
+    path("items/<int:pk>/release/", pos_views.release_item, name="release_item"),
 ]

@@ -5,6 +5,9 @@
 {% for event, reminder in reminders %}
   <div class="flash warning">Reminder: {{ event.code }} was scheduled to move to {{ reminder.status_label }} at {{ reminder.scheduled_at|date:"M j, g:i A" }}. <a href="{% url 'events:advance' event.pk %}">Review status</a></div>
 {% endfor %}
+{% for event, n in alerts %}
+  <div class="flash error">{{ event.code }} has {{ n }} open register alert{{ n|pluralize }}: two-register conflicts or Sold games scanned again. <a href="{% url 'consignment:alerts' event.pk %}">Resolve</a></div>
+{% endfor %}
 <h2>Events</h2>
 {% if events %}
 <ul class="cards">

@@ -65,6 +65,12 @@ class Event(models.Model):
     charge_negative_balances = models.BooleanField(default=False)
     fees_locked_at = models.DateTimeField(null=True, blank=True)
 
+    # Chosen by an admin. Never changes with the clock.
+    active_window = models.ForeignKey(
+        "PriceWindow", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    last_window_closed_at = models.DateTimeField(null=True, blank=True)
+
     created_at = models.DateTimeField(default=timezone.now)
 
     class Meta:

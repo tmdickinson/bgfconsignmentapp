@@ -250,3 +250,198 @@ class CheckinEntry(models.Model):
     @property
     def is_error(self):
         return self.outcome != CheckinOutcome.ACCEPTED
+
+
+class Register(models.Model):
+    """A laptop at the sales tables. Each laptop remembers its register in a cookie."""
+
+    event = models.ForeignKey("events.Event", on_delete=models.PROTECT, related_name="registers")
+    name = models.CharField(max_length=40)
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["event", "name"]
+        constraints = [
+            models.UniqueConstraint(fields=["event", "name"], name="register_name_per_event")
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class CheckoutKind(models.TextChoices):
+    REGULAR = "regular", "Regular"
+    ADMIN = "admin", "Admin cart"
+
+
+class PricingMode(models.TextChoices):
+    ACTIVE = "active", "Active window"
+    CHOSEN = "chosen", "One chosen window"
+    PER_ITEM = "per_item", "Chosen per item"
+
+
+class CheckoutState(models.TextChoices):
+    OPEN = "open", "Open"
+    AWAITING_PAYMENT = "awaiting", "Awaiting payment"
+    COMPLETE = "complete", "Complete"
+    CANCELED = "canceled", "Canceled"
+
+
+ACTIVE_STATES = [CheckoutState.OPEN, CheckoutState.AWAITING_PAYMENT]
+
+
+class Checkout(models.Model):
+    """Every cart, kept permanently with its removed games, Sale ID and cancellation."""
+
+    event = models.ForeignKey("events.Event", on_delete=models.PROTECT, related_name="checkouts")
+    owner = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="checkouts")
+    register = models.ForeignKey(Register, on_delete=models.PROTECT, related_name="checkouts")
+    register_changed_at = models.DateTimeField(null=True, blank=True)
+    kind = models.CharField(max_length=8, choices=CheckoutKind.choices, default=CheckoutKind.REGULAR)
+    opened_by_admin = models.ForeignKey(
+        "accounts.Account", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    pricing_mode = models.CharField(max_length=8, choices=PricingMode.choices,
+                                    default=PricingMode.ACTIVE)
+    window = models.ForeignKey("events.PriceWindow", null=True, blank=True,
+                               on_delete=models.PROTECT, related_name="+")
+    state = models.CharField(max_length=8, choices=CheckoutState.choices,
+                             default=CheckoutState.OPEN)
+    # Set when an admin override returns a completed sale to the payment step. Such a
+    # sale is settled from the admin's sale page, away from any register.
+    reopened_by_override = models.BooleanField(default=False)
+    sale_id = models.CharField(max_length=9, null=True, blank=True)  # noqa: DJ001  (unique when set)
+    total_cents = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(default=timezone.now)
+    proceeded_at = models.DateTimeField(null=True, blank=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+    paid_by = models.ForeignKey("accounts.Account", null=True, blank=True,
+                                on_delete=models.PROTECT, related_name="+")
+    canceled_at = models.DateTimeField(null=True, blank=True)
+    canceled_by = models.ForeignKey("accounts.Account", null=True, blank=True,
+                                    on_delete=models.PROTECT, related_name="+")
+
+    class Meta:
+        ordering = ["-created_at", "-id"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["owner"], name="one_active_checkout_per_owner",
+                condition=models.Q(state__in=ACTIVE_STATES, reopened_by_override=False),
+            ),
+            models.UniqueConstraint(
+                fields=["register"], name="one_active_sale_per_register",
+                condition=models.Q(state__in=ACTIVE_STATES, reopened_by_override=False),
+            ),
+            models.UniqueConstraint(
+                fields=["event", "sale_id"], name="sale_id_unique_per_event",
+                condition=models.Q(sale_id__isnull=False),
+            ),
+        ]
+
+    def __str__(self):
+        return self.sale_id or f"Cart {self.pk}"
+
+    @property
+    def is_active(self):
+        return self.state in ACTIVE_STATES
+
+    @property
+    def is_admin_cart(self):
+        return self.kind == CheckoutKind.ADMIN
+
+
+class CheckoutLine(models.Model):
+    """One game scanned into a cart.
+
+    `live` is true while the line is buying the game: not removed, not released and
+    in a cart that isn't canceled. The database allows one live line per game,
+    which is what makes a double sale impossible.
+    """
+
+    checkout = models.ForeignKey(Checkout, on_delete=models.PROTECT, related_name="lines")
+    listing = models.ForeignKey(Listing, on_delete=models.PROTECT, related_name="checkout_lines")
+    slip = models.ForeignKey(SlipVersion, on_delete=models.PROTECT, related_name="+")
+    window = models.ForeignKey("events.PriceWindow", on_delete=models.PROTECT, related_name="+")
+    price_cents = models.PositiveIntegerField()
+    commission_cents = models.PositiveIntegerField()
+    live = models.BooleanField(default=True)
+    added_at = models.DateTimeField(default=timezone.now)
+    removed_at = models.DateTimeField(null=True, blank=True)
+    removed_by = models.ForeignKey("accounts.Account", null=True, blank=True,
+                                   on_delete=models.PROTECT, related_name="+")
+    released_by_admin = models.ForeignKey("accounts.Account", null=True, blank=True,
+                                          on_delete=models.PROTECT, related_name="+")
+    released_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["added_at", "id"]
+        constraints = [
+            models.UniqueConstraint(fields=["listing"], condition=models.Q(live=True),
+                                    name="one_live_line_per_listing"),
+            models.UniqueConstraint(fields=["checkout", "listing"], name="one_line_per_listing_per_cart"),
+        ]
+
+    @property
+    def is_removed(self):
+        return self.removed_at is not None
+
+
+class RegisterConflict(models.Model):
+    """A register scanned a game on another cart's live line. Blocks payment at both."""
+
+    event = models.ForeignKey("events.Event", on_delete=models.PROTECT, related_name="+")
+    listing = models.ForeignKey(Listing, on_delete=models.PROTECT, related_name="conflicts")
+    holding_checkout = models.ForeignKey(Checkout, on_delete=models.PROTECT, related_name="+")
+    scanning_checkout = models.ForeignKey(Checkout, on_delete=models.PROTECT, related_name="+")
+    raised_by = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="+")
+    raised_at = models.DateTimeField(default=timezone.now)
+    resolved_by = models.ForeignKey("accounts.Account", null=True, blank=True,
+                                    on_delete=models.PROTECT, related_name="+")
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    kept_by_checkout = models.ForeignKey(Checkout, null=True, blank=True,
+                                         on_delete=models.PROTECT, related_name="+")
+    note = models.CharField(max_length=500, blank=True)
+
+    class Meta:
+        ordering = ["-raised_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["listing", "scanning_checkout"],
+                                    condition=models.Q(resolved_at__isnull=True),
+                                    name="one_open_conflict_per_scan"),
+        ]
+
+
+class FlagContext(models.TextChoices):
+    CHECKOUT = "checkout", "Checkout"
+    PICKUP = "pickup", "Pickup"
+
+
+class SoldItemFlag(models.Model):
+    """A Sold game was scanned again. Only an admin can close it, by taking the game."""
+
+    event = models.ForeignKey("events.Event", on_delete=models.PROTECT, related_name="+")
+    listing = models.ForeignKey(Listing, on_delete=models.PROTECT, related_name="sold_flags")
+    context = models.CharField(max_length=8, choices=FlagContext.choices)
+    raised_by = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="+")
+    raised_at = models.DateTimeField(default=timezone.now)
+    resolved_by = models.ForeignKey("accounts.Account", null=True, blank=True,
+                                    on_delete=models.PROTECT, related_name="+")
+    resolved_at = models.DateTimeField(null=True, blank=True)
+    note = models.CharField(max_length=500, blank=True)
+
+    class Meta:
+        ordering = ["-raised_at"]
+        constraints = [
+            models.UniqueConstraint(fields=["listing"], condition=models.Q(resolved_at__isnull=True),
+                                    name="one_open_sold_flag_per_listing"),
+        ]
+
+
+class SaleOverride(models.Model):
+    """An admin returned a completed sale to the payment step."""
+
+    checkout = models.ForeignKey(Checkout, on_delete=models.PROTECT, related_name="overrides")
+    admin = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="+")
+    requested_by = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="+")
+    note = models.CharField(max_length=500)
+    created_at = models.DateTimeField(default=timezone.now)

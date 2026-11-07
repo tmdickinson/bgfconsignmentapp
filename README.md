@@ -2,7 +2,7 @@
 
 The web app that runs the convention's consignment store. Requirements and plans are in [docs/](docs/README.md), with [docs/SPEC.md](docs/SPEC.md) as the source of truth.
 
-**Status:** Phases 1 to 3 of 5 are built: accounts, sign-in, staff, admin badges, events, seller signups, listings, printable sales slips and check-in.
+**Status:** Phases 1 to 4 of 5 are built: accounts, sign-in, staff, admin badges, events, seller signups, listings, printable sales slips, check-in and the point of sale.
 
 ## Local setup
 
@@ -36,6 +36,7 @@ Tests need Postgres, because the double-sale protections rely on it. The test ru
 2. Under **Staff**, add the other admins and volunteers. Each gets an email to set a password. Volunteers get a Volunteer ID, and admins get a badge.
 3. Under **Events**, create the event. Fees lock when the first seller signs up.
 4. Move the event to **Presale** when registration opens, then import signups on the event's **Seller signups** page.
+5. Before Sale, add registers and choose the active price window on the event's **Sales control** page. Each laptop picks its register the first time it opens **Register**.
 
 ## Seller signups from Google Forms
 
@@ -60,7 +61,8 @@ bgf/                Settings and URLs
 apps/core/          Audit log, permissions, IDs, money helpers, badge-and-PIN override step
 apps/accounts/      Accounts, staff, sellers, sign-in, seller linking, badges
 apps/events/        Events, statuses, price windows, fees, waivers, signup import
-apps/consignment/   Listings, slip versions, slip PDFs and check-in
+apps/consignment/   Listings, slips, check-in and the point of sale
+static/vendor/      HTMX, for live register alerts
 templates/          Shared layout
 static/css/app.css  The one stylesheet
 ```

@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% load money static %}
+{% block title %}Register {{ register.name }}{% endblock %}
+{% block head %}<script src="{% static 'vendor/htmx-2.0.4.min.js' %}" defer></script>{% endblock %}
+{% block content %}
+{% include "consignment/_pos_header.html" %}
+
+{% if checkout.state == "awaiting" %}
+  <section class="panel payment">
+    <p class="help">Enter this Sale ID in Square, then take payment.</p>
+    <p class="sale-id">{{ checkout.sale_id }}</p>
+    <dl class="facts big"><dt>Items</dt><dd>{{ count }}</dd><dt>Total due</dt><dd><strong>{{ checkout.total_cents|cents }}</strong></dd>
+      <dt>Restock</dt><dd>{{ removed|length }}</dd></dl>
+    {% if removed %}
+      <div class="flash error restock"><strong>MOVE THESE ITEMS TO THE RESTOCK TABLE NOW</strong>
+        <ul>{% for line in removed %}<li>{{ line.slip.name }} <code>{{ line.slip.item_id }}</code></li>{% endfor %}</ul></div>
+    {% endif %}
+    <div class="actions">
+      <a class="button primary big" href="{% url 'consignment:pos_confirm' event.pk 'paid' %}">Payment Received</a>
+      <a class="button big danger" href="{% url 'consignment:pos_confirm' event.pk 'cancel' %}">Cancel Sale</a>
+    </div>
+  </section>
+{% else %}
+  {% if checkout or not closed_reason %}
+  <form method="post" class="scan-form">{% csrf_token %}
+    <input type="hidden" name="action" value="scan">
+    <label for="code">Scan a game</label>
+    {% if checkout.pricing_mode == "per_item" %}
+      <select name="window" aria-label="Price window for this game" required>
+        <option value="">Window…</option>
+        {% for w in windows %}<option value="{{ w.pk }}"{% if w.pk == chosen_window %} selected{% endif %}>{{ w.name }}</option>{% endfor %}
+      </select>
+    {% endif %}
+    <input id="code" name="code" class="scan" autofocus autocomplete="off" placeholder="Item ID">
+    <button class="primary big">Add</button>
+  </form>
+  {% endif %}
+
+  {% if checkout %}
+  <table class="list cart">
+    <thead><tr><th>Game</th><th>Item ID</th><th>Window</th><th class="num">Price</th><th></th></tr></thead>
+    <tbody>
+    {% for line in lines %}
+      <tr><td>{{ line.slip.name }}</td><td><code>{{ line.slip.item_id }}</code></td><td>{{ line.window.name }}</td><td class="num">{{ line.price_cents|cents }}</td>
+        <td><form method="post">{% csrf_token %}<input type="hidden" name="action" value="remove"><button name="line" value="{{ line.pk }}">Remove</button></form></td></tr>
+    {% empty %}<tr><td colspan="5">The cart is empty. Scan a game.</td></tr>
+    {% endfor %}
+    {% for line in removed %}
+      <tr class="inactive"><td>{{ line.slip.name }} <span class="badge">Removed</span></td><td><code>{{ line.slip.item_id }}</code></td><td colspan="3" class="help">Held for restock. Scan it again to add it back.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+  <div class="actions">
+    <form method="post">{% csrf_token %}<input type="hidden" name="action" value="proceed"><button class="primary big"{% if not lines %} disabled{% endif %}>Proceed to Payment</button></form>
+    <a class="button big danger" href="{% url 'consignment:pos_confirm' event.pk 'cancel' %}">Cancel Sale</a>
+  </div>
+  {% if checkout.is_admin_cart %}<p class="help">Admin cart opened by {{ checkout.opened_by_admin.display_name }}.</p>{% endif %}
+  {% endif %}
+{% endif %}
+<p class="help"><a href="{% url 'consignment:alerts' event.pk %}">Register alerts</a></p>
+{% endblock %}

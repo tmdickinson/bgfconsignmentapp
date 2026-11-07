@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Register alerts{% endblock %}
+{% block content %}
+<p><a href="{% url 'consignment:pos' event.pk %}">← Register</a></p>
+<h1>Register alerts</h1>
+<p class="help">An admin resolves these with their badge and PIN.</p>
+<h2>Two-register conflicts</h2>
+{% for c, form in conflicts %}
+<section class="panel">
+  <h3>{{ c.listing.accepted_slip.name }} <code>{{ c.listing.accepted_slip.item_id }}</code></h3>
+  <p>First: {{ c.holding_checkout.owner.display_name }} at {{ c.holding_checkout.register.name }}{% if c.holding_checkout.sale_id %}, sale {{ c.holding_checkout.sale_id }} waiting for payment. Giving the game to the second sale cancels that whole sale.{% endif %}<br>
+     Second: {{ c.scanning_checkout.owner.display_name }} at {{ c.scanning_checkout.register.name }}, scanned {{ c.raised_at|date:"g:i A" }}.</p>
+  <form method="post">{% csrf_token %}<input type="hidden" name="key" value="c{{ c.pk }}">
+    {% include "core/field.html" with field=form.keep %}
+    {% include "core/override_fields.html" %}
+    <button class="primary">Resolve</button></form>
+</section>
+{% empty %}<p>None.</p>
+{% endfor %}
+<h2>Sold games scanned again</h2>
+{% for f, form in flags %}
+<section class="panel">
+  <h3>{{ f.listing.accepted_slip.name }} <code>{{ f.listing.accepted_slip.item_id }}</code></h3>
+  <p>Scanned at {{ f.get_context_display|lower }} by {{ f.raised_by.display_name }}, {{ f.raised_at|date:"g:i A" }}. The admin takes the game, and holds it for the buyer if the sale was valid.</p>
+  <form method="post">{% csrf_token %}<input type="hidden" name="key" value="f{{ f.pk }}">
+    {% include "core/override_fields.html" %}
+    <button class="primary">I have the game</button></form>
+</section>
+{% empty %}<p>None.</p>
+{% endfor %}
+{% endblock %}

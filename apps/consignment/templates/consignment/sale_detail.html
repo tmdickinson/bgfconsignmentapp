@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Sale {{ sale.sale_id }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'consignment:sales_list' event.pk %}">← Sales</a></p>
+<h1>Sale <code>{{ sale.sale_id }}</code></h1>
+<dl class="facts">
+  <dt>State</dt><dd>{{ sale.get_state_display }}{% if sale.reopened_by_override %} <span class="badge warning">Returned to payment by override</span>{% endif %}</dd>
+  <dt>Kind</dt><dd>{{ sale.get_kind_display }}{% if sale.opened_by_admin %}, authorized by {{ sale.opened_by_admin.display_name }}{% endif %} · {{ sale.get_pricing_mode_display }}{% if sale.window %}: {{ sale.window.name }}{% endif %}</dd>
+  <dt>Staff</dt><dd>{{ sale.owner.display_name }} at {{ sale.register.name }}</dd>
+  <dt>Total</dt><dd><strong>{{ sale.total_cents|cents }}</strong></dd>
+  <dt>Times</dt><dd>Started {{ sale.created_at|date:"D g:i A" }}{% if sale.proceeded_at %} · Sale ID {{ sale.proceeded_at|date:"g:i A" }}{% endif %}{% if sale.paid_at %} · Paid {{ sale.paid_at|date:"g:i A" }} ({{ sale.paid_by.display_name }}){% endif %}{% if sale.canceled_at %} · Canceled {{ sale.canceled_at|date:"g:i A" }} ({{ sale.canceled_by.display_name }}){% endif %}</dd>
+</dl>
+<table class="list">
+  <thead><tr><th>Game</th><th>Item ID</th><th>Seller</th><th>Window</th><th class="num">Price</th><th class="num">Commission</th><th></th></tr></thead>
+  <tbody>
+  {% for line in lines %}
+    <tr class="{% if not line.live %}inactive{% endif %}"><td><a href="{% url 'consignment:item_detail' line.listing_id %}">{{ line.slip.name }}</a></td><td><code>{{ line.slip.item_id }}</code></td>
+      <td>{{ line.listing.seller.seller_id }}</td><td>{{ line.window.name }}</td><td class="num">{{ line.price_cents|cents }}</td><td class="num">{{ line.commission_cents|cents }}</td>
+      <td>{% if line.released_at %}Released by {{ line.released_by_admin.display_name }}{% elif line.removed_at %}Removed by {{ line.removed_by.display_name }}{% endif %}</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% for o in overrides %}<p class="help">Override {{ o.created_at|date:"M j g:i A" }} by {{ o.admin.display_name }}: {{ o.note }}</p>{% endfor %}
+
+{% if sale.state == "complete" %}
+<section class="panel">
+  <h2>Return to payment</h2>
+  <p class="help">Only when Payment Received was recorded but payment couldn't be collected. The whole sale goes back to the payment step.</p>
+  <form method="post">{% csrf_token %}<input type="hidden" name="action" value="override">
+    {% include "core/override_fields.html" with form=override_form %}
+    <button class="danger">Return the sale to payment</button></form>
+</section>
+{% elif sale.state == "awaiting" and sale.reopened_by_override %}
+<section class="panel">
+  <h2>Payment step</h2>
+  <form method="post" class="actions">{% csrf_token %}
+    <label class="checkbox"><input type="checkbox" name="confirm" value="yes"> I've confirmed this in Square</label>
+    <button class="primary" name="action" value="paid">Payment Received</button>
+    <button class="danger" name="action" value="cancel">Cancel Sale</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}

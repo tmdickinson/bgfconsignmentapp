@@ -5,5 +5,11 @@
 <h1>{{ listing.name|default:"Untitled game" }}</h1>
 <p>Seller <code>{{ seller.seller_id }}</code> {{ seller.name }} · {{ event.name }}</p>
 {% include "consignment/_details.html" %}
+{% if held %}
+<div class="flash warning">Held in {{ held.checkout.owner.display_name }}'s {% if held.checkout.sale_id %}sale {{ held.checkout.sale_id }}{% else %}cart{% endif %} at {{ held.checkout.register.name }}{% if held.removed_at %}, removed and waiting for restock{% endif %}.
+  {% if user.is_admin %}{% if held.checkout.sale_id %}A sale with a Sale ID can only be canceled as a whole, from <a href="{% url 'consignment:sales_control' event.pk %}">Sales control</a>.{% else %}
+  <form method="post" action="{% url 'consignment:release_item' listing.pk %}" class="inline" onsubmit="return confirm('Release this game from the cart?')">{% csrf_token %}<button>Release from the cart</button></form>{% endif %}{% endif %}
+</div>
+{% endif %}
 {% include "consignment/_history.html" %}
 {% endblock %}
