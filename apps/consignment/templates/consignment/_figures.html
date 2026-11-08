@@ -1,0 +1,16 @@
+{% load money %}
+<table class="list figures">
+  <tbody>
+    <tr><th>Games checked in</th><td class="num">{{ f.checked_in }}</td></tr>
+    <tr><th>Games sold</th><td class="num">{{ f.sold }}</td></tr>
+    <tr><th>Sales</th><td class="num">{{ f.gross|cents }}</td></tr>
+    <tr><th>Commission</th><td class="num">−{{ f.commission|cents }}{% if f.waived_commission %} <span class="help">({{ f.waived_commission|cents }} waived)</span>{% endif %}</td></tr>
+    <tr><th>Listing fee{% if f.sheets %} ({{ f.sheets }} sheet{{ f.sheets|pluralize }}){% endif %}</th><td class="num">−{{ f.listing_fee|cents }}{% if f.waived_listing %} <span class="help">({{ f.waived_listing|cents }} waived)</span>{% endif %}</td></tr>
+    <tr><th>Unsold item fees ({{ f.unsold_count }} game{{ f.unsold_count|pluralize }}){% if f.projected %} <span class="badge warning">Projected</span>{% endif %}</th><td class="num">−{{ f.unsold_fee|cents }}{% if f.waived_unsold %} <span class="help">({{ f.waived_unsold|cents }} waived)</span>{% endif %}</td></tr>
+    {% if f.forgiven %}<tr><th>Shortfall forgiven</th><td class="num">{{ f.forgiven|cents }}</td></tr>{% endif %}
+    <tr class="total"><th>{% if f.balance_owed %}Balance owed by seller{% else %}Net payout{% endif %}</th>
+      <td class="num">{% if f.balance_owed %}{{ f.balance_owed|cents }}{% else %}{{ f.payout_due|cents }}{% endif %}</td></tr>
+  </tbody>
+</table>
+{% if f.projected %}<p class="help">Projected: some unsold games aren't settled yet, so these fees may change.</p>{% endif %}
+{% if f.payout %}<p><strong>{{ f.payout.get_outcome_display }}</strong> {{ f.payout.recorded_at|date:"M j, Y" }}{% if f.payout.reference %}, reference {{ f.payout.reference }}{% endif %}. Figures frozen.</p>{% endif %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Payout {{ seller.seller_id }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'consignment:payouts' event.pk %}">← Payouts</a></p>
+<h1>Payout: <code>{{ seller.seller_id }}</code> {{ seller.name }}</h1>
+<p>Preferred payment: <strong>{{ seller.payment_method|default:"Not given" }}</strong> · {{ seller.email }}</p>
+{% include "consignment/_figures.html" %}
+{% if not f.frozen %}
+  {% if blockers %}
+    <div class="flash warning"><p>Not ready:</p><ul>{% for b in blockers %}<li>{{ b }}</li>{% endfor %}</ul></div>
+  {% else %}
+  <section class="panel">
+    <h2>Record the outcome</h2>
+    <form method="post">{% csrf_token %}
+      {{ form.non_field_errors }}
+      {% for field in form %}{% include "core/field.html" %}{% endfor %}
+      <button class="primary">Record and freeze figures</button>
+    </form>
+  </section>
+  {% endif %}
+{% endif %}
+{% endblock %}

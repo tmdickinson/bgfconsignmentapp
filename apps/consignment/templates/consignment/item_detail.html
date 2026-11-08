@@ -11,5 +11,21 @@
   <form method="post" action="{% url 'consignment:release_item' listing.pk %}" class="inline" onsubmit="return confirm('Release this game from the cart?')">{% csrf_token %}<button>Release from the cart</button></form>{% endif %}{% endif %}
 </div>
 {% endif %}
+{% if user.is_admin and admin_moves %}
+<section class="panel">
+  <h2>Change status</h2>
+  <p class="help">Admins can mark a game Missing or resolve an Error. A note is required.</p>
+  <form method="post" action="{% url 'consignment:item_status' listing.pk %}" class="search">{% csrf_token %}
+    <select name="status">{% for value, label in admin_moves %}<option value="{{ value }}">{{ label }}</option>{% endfor %}</select>
+    <input name="note" placeholder="Note" maxlength="500" required>
+    <button>Change status</button>
+  </form>
+</section>
+{% endif %}
+{% if pickup_entries %}
+<section class="panel"><h2>Pickup</h2>
+<table class="list"><tbody>{% for p in pickup_entries %}<tr><td>{{ p.created_at|date:"M j, g:i A" }}</td><td>{{ p.get_outcome_display }}</td><td>{{ p.note }}</td><td>{{ p.created_by.display_name }}</td></tr>{% endfor %}</tbody></table>
+</section>
+{% endif %}
 {% include "consignment/_history.html" %}
 {% endblock %}

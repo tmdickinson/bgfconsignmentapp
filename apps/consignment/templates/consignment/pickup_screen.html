@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block title %}Pickup {{ seller.seller_id }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'consignment:pickup_sellers' event.pk %}">← All sellers</a></p>
+<div class="title-row"><h1>Pickup: <code>{{ seller.seller_id }}</code> {{ seller.name }}</h1>
+  <span class="counts"><strong>{{ to_return|length }}</strong> still to return</span></div>
+{% if frozen %}<div class="flash warning">This seller's payout is recorded, so their games can't change here. Ask an admin.</div>{% endif %}
+
+{% if pending %}
+<section class="panel pending outdated">
+  <div class="flash warning"><strong>{{ pending.message }}</strong></div>
+  <form method="post" class="actions">{% csrf_token %}<input type="hidden" name="action" value="decide">
+    {% if pending.kind == "take" %}
+      <button class="primary big" name="seller_takes" value="yes">Seller takes it: Returned</button>
+      <button class="big" name="seller_takes" value="no">Leave it</button>
+    {% elif pending.kind == "donated" %}
+      <button class="big" name="seller_takes" value="no">Seller confirms the donation</button>
+      <button class="primary big" name="seller_takes" value="yes">Seller wants it back: Returned</button>
+    {% else %}
+      <button class="primary big" name="seller_takes" value="yes">Seller wants it back: Returned</button>
+      <button class="big" name="seller_takes" value="no">Leave it abandoned</button>
+    {% endif %}
+  </form>
+  {% if pending.kind == "donated" %}<p class="help">Taking back a donated game means the unsold item fee applies.</p>{% endif %}
+</section>
+{% else %}
+<form method="post" class="scan-form">{% csrf_token %}<input type="hidden" name="action" value="scan">
+  <label for="code">Scan each game as it goes back to the seller</label>
+  <input id="code" name="code" class="scan" autofocus autocomplete="off" placeholder="Item ID">
+  <button class="primary big">Return</button>
+</form>
+{% endif %}
+
+<h2>Still to return</h2>
+<table class="list"><thead><tr><th>Item ID</th><th>Game</th></tr></thead><tbody>
+{% for lst in to_return %}<tr><td><code>{{ lst.item_id }}</code></td><td>{{ lst.accepted_slip.name }}</td></tr>
+{% empty %}<tr><td colspan="2">Nothing left on the tables for this seller.</td></tr>{% endfor %}
+</tbody></table>
+<h2>Other games</h2>
+<table class="list"><thead><tr><th>Item ID</th><th>Game</th><th>Status</th></tr></thead><tbody>
+{% for lst in other %}<tr><td><code>{{ lst.item_id|default:"—" }}</code></td><td>{{ lst.accepted_slip.name|default:lst.name }}</td><td>{{ lst.get_status_display }}</td></tr>{% endfor %}
+</tbody></table>
+{% endblock %}

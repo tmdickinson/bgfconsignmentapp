@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Sales and fees{% endblock %}
+{% block content %}
+<p><a href="{% url 'accounts:seller_home' seller.pk %}">← My games</a></p>
+<div class="title-row"><h1>{% if event.is_closed %}Final report{% else %}Sales and fees{% endif %}</h1>
+  <a class="button" href="?format=csv">Download CSV</a></div>
+<p>Seller <code>{{ seller.seller_id }}</code> {{ seller.name }} · {{ event.name }}</p>
+{% include "consignment/_figures.html" %}
+<h2>My games</h2>
+<table class="list">
+  <thead><tr>{% for h in headings %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+  <tbody>{% for row in rows %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>{% empty %}<tr><td colspan="6">No games.</td></tr>{% endfor %}</tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Donated and abandoned scanning{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Donated and abandoned scanning</h1>
+<p class="help">Scan every unsold game still here. Games marked for donation become Donated and the rest Abandoned. Games that can't be found can be marked Missing from their page.</p>
+{% if open %}
+<form method="post" class="scan-form">{% csrf_token %}
+  <input name="code" class="scan" autofocus autocomplete="off" placeholder="Item ID" aria-label="Item ID">
+  <button class="primary big">Account for it</button>
+</form>
+{% else %}<div class="flash warning">Scanning opens when the event moves to Pickup.</div>{% endif %}
+<h2>Still unaccounted for: {{ remaining|length }}</h2>
+<table class="list"><thead><tr><th>Item ID</th><th>Game</th><th>Seller</th><th>Donate?</th></tr></thead><tbody>
+{% for lst in remaining %}<tr><td><code>{{ lst.accepted_slip.item_id }}</code></td><td><a href="{% url 'consignment:item_detail' lst.pk %}">{{ lst.accepted_slip.name }}</a></td><td>{{ lst.seller.seller_id }}</td><td>{% if lst.accepted_slip.donate_if_unsold %}Yes{% endif %}</td></tr>
+{% empty %}<tr><td colspan="4">Every unsold game is accounted for.</td></tr>{% endfor %}
+</tbody></table>
+<div class="columns">
+  <section class="panel"><h2>Donated: {{ donated|length }}</h2><ul>{% for lst in donated %}<li><code>{{ lst.accepted_slip.item_id }}</code> {{ lst.accepted_slip.name }}</li>{% endfor %}</ul></section>
+  <section class="panel"><h2>Abandoned: {{ abandoned|length }}</h2><ul>{% for lst in abandoned %}<li><code>{{ lst.accepted_slip.item_id }}</code> {{ lst.accepted_slip.name }}</li>{% endfor %}</ul></section>
+</div>
+<p><a href="{% url 'consignment:report' event.pk 'donated-abandoned' %}">Donated and abandoned report</a></p>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}Pickup for {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Pickup</h1>
+{% if not open %}<div class="flash warning">Pickup opens when the event moves to Pickup.</div>{% endif %}
+<form method="get" class="search"><input type="search" name="q" value="{{ q }}" placeholder="Seller ID or name" autofocus autocomplete="off"><button class="primary">Find seller</button></form>
+<table class="list">
+  <thead><tr><th>Seller</th><th>Name</th><th>To return</th><th>Returned</th><th></th></tr></thead>
+  <tbody>
+  {% for s in sellers %}
+    <tr><td><code>{{ s.seller_id }}</code></td><td>{{ s.name }}</td><td>{{ s.to_return }}</td><td>{{ s.returned }}</td>
+      <td>{% if open %}<a class="button primary" href="{% url 'consignment:pickup_screen' event.pk s.pk %}">Pickup</a>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="5">No sellers{% if q %} match{% endif %}.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

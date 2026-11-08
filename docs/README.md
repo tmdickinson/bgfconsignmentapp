@@ -1,6 +1,6 @@
 # Project documents
 
-Consignment store app for Buckeye Game Fest. Phases 1 (accounts and events), 2 (listings and slips), 3 (check-in) and 4 (point of sale) are built. Setup instructions are in the [project README](../README.md).
+Consignment store app for Buckeye Game Fest. All five phases are built. Setup instructions are in the [project README](../README.md).
 
 | Document | Purpose |
 | --- | --- |
@@ -8,6 +8,7 @@ Consignment store app for Buckeye Game Fest. Phases 1 (accounts and events), 2 (
 | [DATA_MODEL.md](DATA_MODEL.md) | Records, database constraints and fee formulas |
 | [BUILD_PLAN.md](BUILD_PLAN.md) | Stack, hosting, code layout, phases and tests |
 | [OPEN_ITEMS.md](OPEN_ITEMS.md) | Deferred decisions and assumptions to confirm |
+| [HOW_TO.md](HOW_TO.md) | How to use the app, for admins, volunteers and sellers |
 
 ## History
 

@@ -15,6 +15,7 @@
 
 <nav class="tiles">
   {% if event.status == "checkin" %}<a href="{% url 'consignment:checkin_sellers' event.pk %}"><strong>Check-in</strong></a>{% endif %}
+  {% if event.status == "pickup" %}<a href="{% url 'consignment:pickup_sellers' event.pk %}"><strong>Pickup</strong></a>{% endif %}
   <a href="{% url 'events:sellers' event.pk %}">Sellers <strong>{{ seller_count }}</strong></a>
   <a href="{% url 'consignment:event_items' event.pk %}">Games</a>
   {% if event.status in "checkin sale pickup" %}<a href="{% url 'consignment:pos' event.pk %}"><strong>Register</strong></a>{% endif %}
@@ -22,6 +23,9 @@
   {% if user.is_admin %}
   <a href="{% url 'consignment:sales_control' event.pk %}">Sales control</a>
   <a href="{% url 'consignment:sales_list' event.pk %}">Sales</a>
+  {% if event.status == "pickup" %}<a href="{% url 'consignment:unsold_scan' event.pk %}">Donated and abandoned scanning</a>{% endif %}
+  <a href="{% url 'consignment:payouts' event.pk %}">Payouts</a>
+  <a href="{% url 'consignment:reports' event.pk %}">Reports</a>
   {% endif %}
   {% if user.is_admin %}
   <a href="{% url 'events:import' event.pk %}">Seller signups{% if review_count %} <span class="badge warning">{{ review_count }} to review</span>{% endif %}</a>

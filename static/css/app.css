@@ -175,3 +175,10 @@ td.num, th.num { text-align: right; }
 table.cart td { font-size: 1.05rem; }
 .flash.conflict { font-size: 1.1rem; border-width: 2px; }
 label.checkbox { display: flex; align-items: center; gap: 6px; }
+
+/* Money */
+table.figures { max-width: 36rem; }
+table.figures th { color: var(--text); font-size: 1rem; font-weight: 400; }
+tr.total th, tr.total td { font-weight: 700; border-top: 2px solid var(--text); }
+.flash.info { background: var(--surface); }
+.table-scroll { overflow-x: auto; }

@@ -11,6 +11,7 @@ from apps.core.permissions import admin_required, can_access_event, event_view, 
 from .forms import ListingForm, listing_initial
 from .models import ItemStatus, Listing, SlipVersion
 from .services import listings as svc
+from .services.pickup import ADMIN_MOVES
 from .slips import SlipData, sample_slips, slips_pdf
 
 
@@ -193,7 +194,9 @@ def item_detail(request, pk):
             .select_related("checkout__owner", "checkout__register").first())
     return render(request, "consignment/item_detail.html", {
         "listing": listing, "seller": listing.seller, "event": listing.seller.event,
-        "held": held, **_history(listing)})
+        "held": held, **_history(listing),
+        "admin_moves": [(s.value, s.label) for s in ADMIN_MOVES.get(listing.status, [])],
+        "pickup_entries": listing.pickup_entries.select_related("created_by__staff_profile")})
 
 
 @admin_required

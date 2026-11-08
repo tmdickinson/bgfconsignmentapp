@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Reports for {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Reports</h1>
+<table class="list"><tbody>
+{% for slug, title, about in reports %}
+  <tr><td><a href="{% url 'consignment:report' event.pk slug %}">{{ title }}</a><br><span class="help">{{ about }}</span></td>
+    <td><a class="button" href="{% url 'consignment:report' event.pk slug %}?format=csv">CSV</a></td></tr>
+{% endfor %}
+</tbody></table>
+{% endblock %}

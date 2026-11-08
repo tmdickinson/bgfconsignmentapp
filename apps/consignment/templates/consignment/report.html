@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block title %}{{ report.title }}{% endblock %}
+{% block content %}
+<p><a href="{% url back.0 back.1 %}">← Reports</a></p>
+<div class="title-row"><h1>{{ report.title }}</h1><a class="button" href="?format=csv">Download CSV</a></div>
+{% if event %}<p>{{ event.code }} {{ event.name }} · {{ event.get_status_display }}</p>{% endif %}
+{% for note in report.notes %}<p class="flash {% if 'NOT BALANCED' in note %}error{% else %}info{% endif %}">{{ note }}</p>{% endfor %}
+<div class="table-scroll">
+<table class="list">
+  <thead><tr>{% for h in report.headings %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+  <tbody>
+  {% for row in rows %}<tr>{% for cell in row %}<td>{{ cell }}</td>{% endfor %}</tr>
+  {% empty %}<tr><td colspan="{{ report.headings|length }}">Nothing to show.</td></tr>{% endfor %}
+  </tbody>
+  {% if totals %}<tfoot><tr class="total">{% for cell in totals %}<td>{{ cell }}</td>{% endfor %}</tr></tfoot>{% endif %}
+</table>
+</div>
+{% endblock %}

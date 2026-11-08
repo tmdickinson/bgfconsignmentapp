@@ -2,7 +2,9 @@
 
 The web app that runs the convention's consignment store. Requirements and plans are in [docs/](docs/README.md), with [docs/SPEC.md](docs/SPEC.md) as the source of truth.
 
-**Status:** Phases 1 to 4 of 5 are built: accounts, sign-in, staff, admin badges, events, seller signups, listings, printable sales slips, check-in and the point of sale.
+**Status:** All five planned phases are built: accounts and events, listings and slips, check-in, the point of sale, and pickup, payouts and closing. Undecided items are in [docs/OPEN_ITEMS.md](docs/OPEN_ITEMS.md).
+
+**Using the app:** see [docs/HOW_TO.md](docs/HOW_TO.md) for admins, volunteers and sellers.
 
 ## Local setup
 
@@ -21,6 +23,14 @@ Open http://localhost:8000 and sign in with the admin's email. Emails, such as s
 
 Without Docker, any Postgres 16 works. Point `DATABASE_URL` in `.env` at it.
 
+### Demo data
+
+```sh
+uv run --env-file .env manage.py load_demo
+```
+
+This adds demo staff, a closed 2025 event and a 2026 event in Sale, with 53 games in total. Every demo account's password is `demo-password-2026`. Sign in as `demo.admin@example.com`, with badge PIN 2468, or as seller `D26A-001`. The command only runs with `DJANGO_DEBUG=1`, so it can't be loaded on the real site by accident.
+
 ## Tests and checks
 
 ```sh
@@ -30,13 +40,30 @@ uv run ruff check .
 
 Tests need Postgres, because the double-sale protections rely on it. The test run creates and reuses a database named `test_bgf`. Add `--create-db` after changing models.
 
-## First steps in the app
+## Starting a new event
 
-1. On **My account**, set your 4-digit override PIN and print your badge.
-2. Under **Staff**, add the other admins and volunteers. Each gets an email to set a password. Volunteers get a Volunteer ID, and admins get a badge.
-3. Under **Events**, create the event. Fees lock when the first seller signs up.
-4. Move the event to **Presale** when registration opens, then import signups on the event's **Seller signups** page.
-5. Before Sale, add registers and choose the active price window on the event's **Sales control** page. Each laptop picks its register the first time it opens **Register**.
+Each year is a new event with its own sellers, fees and records. Past events stay available to admins and are never changed. The steps are in the admin section of [docs/HOW_TO.md](docs/HOW_TO.md).
+
+## Deployment
+
+The app runs on any host with Python 3.12 and PostgreSQL 16. The build plan recommends Render, with a web service, a Postgres database and a cron job. Check current prices before signing up.
+
+1. **Database:** create a PostgreSQL 16 database and copy its connection URL.
+2. **Web service:** create one from this repository.
+   - Build command: `uv sync --frozen && uv run manage.py collectstatic --noinput`
+   - Pre-deploy command: `uv run manage.py migrate`
+   - Start command: `uv run gunicorn bgf.wsgi --bind 0.0.0.0:$PORT`
+3. **Environment variables:** set these on the web service:
+   - `DJANGO_SECRET_KEY`: a long random value, generated once and kept secret
+   - `DATABASE_URL`
+   - `DJANGO_ALLOWED_HOSTS` and `DJANGO_CSRF_TRUSTED_ORIGINS`: the site's domain, with `https://` in the second
+   - `SITE_URL`
+   - Email: `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` and `DEFAULT_FROM_EMAIL`, from a low-cost email service
+
+   Leave `DJANGO_DEBUG` unset. HTTPS redirects and secure cookies turn on automatically.
+4. **Cron job:** if the Google Form is connected, add one that runs `uv run manage.py sync_forms` every 10 minutes, with the same environment variables.
+5. **First admin:** open a shell on the web service and run `uv run manage.py create_first_admin --name "..." --email ...`. It asks for the password.
+6. **Backups:** turn on daily database backups. The database is the only thing that needs backing up.
 
 ## Seller signups from Google Forms
 
@@ -61,7 +88,7 @@ bgf/                Settings and URLs
 apps/core/          Audit log, permissions, IDs, money helpers, badge-and-PIN override step
 apps/accounts/      Accounts, staff, sellers, sign-in, seller linking, badges
 apps/events/        Events, statuses, price windows, fees, waivers, signup import
-apps/consignment/   Listings, slips, check-in and the point of sale
+apps/consignment/   Listings, slips, check-in, point of sale, pickup, payouts and reports
 static/vendor/      HTMX, for live register alerts
 templates/          Shared layout
 static/css/app.css  The one stylesheet

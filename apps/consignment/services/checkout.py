@@ -518,8 +518,10 @@ def resolve_sold_flag(flag, admin, note):
 
 
 def payout_recorded_for(checkout):
-    """Whether any seller in the sale has a recorded payout. Payouts arrive in Phase 5."""
-    return False
+    """Whether any seller in the sale has a recorded payout."""
+    from .payouts import payout_recorded_for as recorded
+
+    return recorded(checkout)
 
 
 def sale_override(checkout, admin, actor, note):

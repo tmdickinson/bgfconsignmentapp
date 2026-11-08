@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load money %}
+{% block title %}Payouts for {{ event.code }}{% endblock %}
+{% block content %}
+<p><a href="{% url 'events:detail' event.pk %}">← {{ event.code }}</a></p>
+<h1>Payouts</h1>
+<p class="help">A payout can be recorded once all of a seller's checked-in games are Sold, Returned, Donated or Abandoned, with no open Sold flags. Recording it freezes their figures. Payments themselves happen outside the app.</p>
+{% if event.status == "pickup" and waiting %}
+<form method="post">{% csrf_token %}<button name="action" value="automatic">Record automatic outcomes</button>
+  <span class="help">Nothing due and Balance forgiven, for every seller who's ready.</span></form>
+{% endif %}
+<table class="list">
+  <thead><tr><th>Seller</th><th>Payment method</th><th class="num">Sales</th><th class="num">Fees</th><th class="num">Net payout</th><th class="num">Owed by seller</th><th>Outcome</th></tr></thead>
+  <tbody>
+  {% for f, blockers in rows %}
+    <tr><td><a href="{% url 'consignment:payout_seller' event.pk f.seller.pk %}"><code>{{ f.seller.seller_id }}</code> {{ f.seller.name }}</a></td>
+      <td>{{ f.seller.payment_method }}</td><td class="num">{{ f.gross|cents }}</td>
+      <td class="num">{{ f.fees|cents }}{% if f.projected %} <span class="badge warning">Projected</span>{% endif %}</td>
+      <td class="num">{{ f.payout_due|cents }}</td><td class="num">{% if f.balance_owed %}{{ f.balance_owed|cents }}{% endif %}</td>
+      <td>{% if f.payout %}{{ f.payout.get_outcome_display }}{% if f.payout.reference %}<br><span class="help">{{ f.payout.reference }}</span>{% endif %}{% elif blockers %}<span class="help">Not ready</span>{% else %}<a class="button primary" href="{% url 'consignment:payout_seller' event.pk f.seller.pk %}">Record</a>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="7">No seller has games checked in.</td></tr>
+  {% endfor %}
+  </tbody>
+  <tfoot><tr class="total"><th colspan="2">Total</th><td class="num">{{ totals.gross|cents }}</td><td class="num">{{ totals.fees|cents }}</td><td class="num">{{ totals.payouts|cents }}</td><td></td><td></td></tr></tfoot>
+</table>
+<p class="help">Sellers with nothing checked in owe nothing and need no outcome.</p>
+{% endblock %}

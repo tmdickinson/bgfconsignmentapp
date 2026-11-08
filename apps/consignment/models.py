@@ -445,3 +445,78 @@ class SaleOverride(models.Model):
     requested_by = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="+")
     note = models.CharField(max_length=500)
     created_at = models.DateTimeField(default=timezone.now)
+
+
+class PickupOutcome(models.TextChoices):
+    RETURNED = "returned", "Returned to the seller"
+    KEPT_DONATED = "kept_donated", "Seller confirmed the donation"
+    LEFT_ABANDONED = "left_abandoned", "Left abandoned"
+    REFUSED = "refused", "Not returned"
+
+
+class PickupEntry(models.Model):
+    """A game scanned at pickup, including scans that change nothing, for its history."""
+
+    listing = models.ForeignKey(Listing, on_delete=models.PROTECT, related_name="pickup_entries")
+    outcome = models.CharField(max_length=16, choices=PickupOutcome.choices)
+    note = models.CharField(max_length=500, blank=True)
+    created_by = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="+")
+    created_at = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        ordering = ["created_at", "id"]
+
+
+class Settlement(models.Model):
+    """A seller's figures, frozen when their payout is recorded. Never changed after."""
+
+    seller = models.OneToOneField("accounts.Seller", on_delete=models.PROTECT,
+                                  related_name="settlement")
+    checked_in_count = models.PositiveIntegerField()
+    sold_count = models.PositiveIntegerField()
+    unsold_fee_count = models.PositiveIntegerField()
+    sheets = models.PositiveIntegerField()
+    gross_cents = models.PositiveIntegerField()
+    commission_cents = models.PositiveIntegerField()
+    listing_fee_cents = models.PositiveIntegerField()
+    unsold_fee_cents = models.PositiveIntegerField()
+    waived_commission_cents = models.PositiveIntegerField()
+    waived_listing_cents = models.PositiveIntegerField()
+    waived_unsold_cents = models.PositiveIntegerField()
+    # Negative only when negative balances are charged: the seller owes that amount.
+    net_cents = models.IntegerField()
+    forgiven_cents = models.PositiveIntegerField()
+    frozen_at = models.DateTimeField(default=timezone.now)
+    frozen_by = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="+")
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            raise ImmutableError("Settlements can't be changed.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise ImmutableError("Settlements can't be deleted.")
+
+
+class PayoutOutcome(models.TextChoices):
+    PAID = "paid", "Paid"
+    NOTHING_DUE = "nothing_due", "Nothing due"
+    FORGIVEN = "forgiven", "Balance forgiven"
+    COLLECTED = "collected", "Balance collected"
+    NOT_COLLECTED = "not_collected", "Balance not collected"
+
+
+class Payout(models.Model):
+    """What happened with a seller's money. The app reports it; payment happens outside."""
+
+    settlement = models.OneToOneField(Settlement, on_delete=models.PROTECT, related_name="payout")
+    outcome = models.CharField(max_length=14, choices=PayoutOutcome.choices)
+    reference = models.CharField(max_length=100, blank=True)
+    note = models.CharField(max_length=500, blank=True)
+    recorded_by = models.ForeignKey("accounts.Account", on_delete=models.PROTECT, related_name="+")
+    recorded_at = models.DateTimeField(default=timezone.now)
+
+    def save(self, *args, **kwargs):
+        if self.pk:
+            raise ImmutableError("Payouts can't be changed.")
+        super().save(*args, **kwargs)

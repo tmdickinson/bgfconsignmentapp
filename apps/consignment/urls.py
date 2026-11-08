@@ -1,6 +1,6 @@
 from django.urls import path
 
-from . import checkin_views, pos_views, views
+from . import checkin_views, money_views, pos_views, views
 
 app_name = "consignment"
 
@@ -35,4 +35,16 @@ urlpatterns = [
     path("events/<int:event_pk>/sales/", pos_views.sales_list, name="sales_list"),
     path("events/<int:event_pk>/sales/<int:pk>/", pos_views.sale_detail, name="sale_detail"),
     path("items/<int:pk>/release/", pos_views.release_item, name="release_item"),
+    path("items/<int:pk>/status/", money_views.item_status, name="item_status"),
+    path("events/<int:event_pk>/pickup/", money_views.pickup_sellers, name="pickup_sellers"),
+    path("events/<int:event_pk>/pickup/<int:seller_pk>/", money_views.pickup_screen,
+         name="pickup_screen"),
+    path("events/<int:event_pk>/unsold/", money_views.unsold_scan, name="unsold_scan"),
+    path("events/<int:event_pk>/payouts/", money_views.payout_list, name="payouts"),
+    path("events/<int:event_pk>/payouts/<int:seller_pk>/", money_views.payout_seller,
+         name="payout_seller"),
+    path("events/<int:event_pk>/reports/", money_views.reports_index, name="reports"),
+    path("events/<int:event_pk>/reports/<slug:slug>/", money_views.report, name="report"),
+    path("seller/<int:seller_pk>/statement/", money_views.seller_statement,
+         name="seller_statement"),
 ]

@@ -6,11 +6,11 @@ Decisions still needed, as of 2026-11-07. None of these blocks starting the buil
 
 | Item | Owner | Behavior until decided | Needed by |
 | --- | --- | --- | --- |
-| Handling of Missing items | Treasurer | Admins can set the status. It blocks that seller's payout and closing the event. | Phase 5, and before the convention |
-| Handling of Error items | Treasurer | Set by check-in overrides. Blocks pickup of the item, that seller's payout and closing. | Phase 5, and before the convention |
+| Handling of Missing items | Treasurer | Admins can mark an Available game Missing, or set it back, with a note. It blocks that seller's payout and closing the event. No unsold fee applies. | Before the convention |
+| Handling of Error items | Treasurer | Set by check-in overrides. Admins can set it to Available or Missing, with a note. Blocks pickup of the item, that seller's payout and closing. | Before the convention |
 | Slip layout, field length limits and donate mark | Treasurer | Provisional layout, built in Phase 2: name 60 characters, publisher 40, description 300, condition details 100. Admins can print sample slips from the event page. | Before Presale |
-| Square export format and import | Treasurer | Reports list Sale IDs for manual matching | Phase 5 or later |
-| Rest of the Post-sale process | Treasurer | Reports and the payout outcomes in SPEC section 11 | Phase 5 or later |
+| Square export format and import | Treasurer | The Completed sales report lists Sale IDs for manual matching | After the first convention |
+| Rest of the Post-sale process | Treasurer | Reports and the payout outcomes in SPEC section 11, built in Phase 5 | After the first convention |
 | Hosting budget and domain name | Board | Local development only | Before deployment |
 | Who authorizes the Google Form connection, and who owns the Google Cloud project it needs | Board | CSV import works without it. The connection is built but needs a Google Cloud client ID and secret. | Before Presale, for the live connection |
 
@@ -85,4 +85,18 @@ These weren't explicitly decided. They were filled in while combining the docume
 | A completed sale returned to payment by an override is finished on the admin's sale page, not at a register | Sales |
 | Admins close Sold flags and conflicts on the register alerts page with badge and PIN, even when signed in | Register alerts |
 | A failed first scan doesn't leave an empty cart open. The empty cart is kept as canceled. | Registers |
-| The check that blocks a sale override after a payout is connected in Phase 5, when payouts exist | Sales |
+| The check that blocks a sale override after a payout is connected in Phase 5, when payouts exist | Sales. Done in Phase 5. |
+
+### Added during Phase 5
+
+| Assumption | Where |
+| --- | --- |
+| A staff member with both roles gets the volunteer and admin waivers combined | Fees |
+| A game marked for donation that is still on the tables isn't counted in projected unsold fees, unless donated games are charged | Fees |
+| Payouts are recorded only during Pickup | Payouts |
+| Nothing due and Balance forgiven are recorded with one button for every ready seller, not silently | Payouts |
+| Once a seller's payout is recorded, their games can't change at pickup or by admin status changes | Pickup |
+| Pickup is done one seller at a time, and another seller's game is refused | Pickup |
+| A Sold game found during donated and abandoned scanning raises a Sold flag, as at pickup | Unsold scanning |
+| Sellers can see their sales and fees at any time. The page becomes their final report when the event closes. | Seller statement |
+| For sellers not yet settled, the financial report shows the amount currently owed | Reports |

@@ -108,5 +108,5 @@ Each phase ends with working screens the board can try, passing tests and a git 
 ## Working agreements
 
 - Commit to git at the end of each phase.
-- No code until the phase has been started. Phase 1 was built 2026-11-07.
+- No code until the phase has been started. All five phases were built 2026-11-07.
 - When a decision changes, update `SPEC.md` so it stays the single source of truth.
