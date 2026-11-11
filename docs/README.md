@@ -9,6 +9,7 @@ Consignment store app for Buckeye Game Fest. All five phases are built. Setup in
 | [BUILD_PLAN.md](BUILD_PLAN.md) | Stack, hosting, code layout, phases and tests |
 | [OPEN_ITEMS.md](OPEN_ITEMS.md) | Deferred decisions and assumptions to confirm |
 | [HOW_TO.md](HOW_TO.md) | How to use the app, for admins, volunteers and sellers |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Hosting setup on a managed cPanel server |
 
 ## History
 

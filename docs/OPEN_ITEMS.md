@@ -1,6 +1,6 @@
 # Open Items
 
-Decisions still needed, as of 2026-11-07. None of these blocks starting the build.
+Decisions still needed, as of 2026-11-08. None of these blocks starting the build.
 
 ## Deferred decisions
 
@@ -11,7 +11,7 @@ Decisions still needed, as of 2026-11-07. None of these blocks starting the buil
 | Slip layout, field length limits and donate mark | Treasurer | Provisional layout, built in Phase 2: name 60 characters, publisher 40, description 300, condition details 100. Admins can print sample slips from the event page. | Before Presale |
 | Square export format and import | Treasurer | The Completed sales report lists Sale IDs for manual matching | After the first convention |
 | Rest of the Post-sale process | Treasurer | Reports and the payout outcomes in SPEC section 11, built in Phase 5 | After the first convention |
-| Hosting budget and domain name | Board | Local development only | Before deployment |
+| Hosting provider, plan and budget | Board | Leaning toward one managed cPanel server, such as InMotion, for WordPress, email and the apps. Confirm the checklist in DEPLOYMENT.md with the host, then move off DreamHost. The existing domain is kept. | Before deployment, in the off-season |
 | Who authorizes the Google Form connection, and who owns the Google Cloud project it needs | Board | CSV import works without it. The connection is built but needs a Google Cloud client ID and secret. | Before Presale, for the live connection |
 
 ## Assumptions to confirm

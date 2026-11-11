@@ -18,11 +18,14 @@ Approved 2026-11-05. Requirements are in [SPEC.md](SPEC.md), records in [DATA_MO
 
 ## Hosting
 
-**Recommended: Render**, at about $160 a year for hosting plus about $15 for a domain, or roughly $175. Render handles the server, security patches and database backups, and includes HTTPS. Updates deploy from the code repository.
+**Leaning toward: one managed cPanel server** for the WordPress site, the 15 email accounts and up to five Django apps, with InMotion Hosting as the leading candidate. This was chosen on 2026-11-08 over two other options:
 
-Email and the scheduled sync should add only a few dollars a year. All prices are approximate and from memory, so check them before signing up.
+- Keeping DreamHost for WordPress and email, and adding a self-managed DreamHost server for the apps. That option is cheaper, but needs a volunteer to maintain the server.
+- Putting the apps on Render. That option is managed, but splits hosting across providers.
 
-The alternative is a small virtual server at $60–80 a year plus the domain. It is cheaper, but a volunteer must maintain updates and backups. The app is configured through environment variables and isn't tied to either host.
+The host takes care of patching, monitoring and backups. All of it sits under the existing domain, with each app on its own subdomain. BGF is a 501(c)(4), so the free Google and Microsoft nonprofit email programs, which require 501(c)(3) status, don't apply.
+
+The app runs through cPanel's "Setup Python App" (Passenger), with PostgreSQL from cPanel. What to confirm with the host before buying, and the setup steps, are in [DEPLOYMENT.md](DEPLOYMENT.md). Get a quote for the managed VPS plan, because prices change. The app isn't tied to this host: settings come from environment variables or a `.env` file.
 
 ## Code layout
 

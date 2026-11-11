@@ -38,7 +38,7 @@ uv run --env-file .env pytest
 uv run ruff check .
 ```
 
-Tests need Postgres, because the double-sale protections rely on it. The test run creates and reuses a database named `test_bgf`. Add `--create-db` after changing models.
+Tests need Postgres running (`docker compose up -d`), because the double-sale protections rely on it. The test run creates and reuses a database named `test_bgf`. Add `--create-db` after changing models.
 
 ## Starting a new event
 
@@ -46,24 +46,7 @@ Each year is a new event with its own sellers, fees and records. Past events sta
 
 ## Deployment
 
-The app runs on any host with Python 3.12 and PostgreSQL 16. The build plan recommends Render, with a web service, a Postgres database and a cron job. Check current prices before signing up.
-
-1. **Database:** create a PostgreSQL 16 database and copy its connection URL.
-2. **Web service:** create one from this repository.
-   - Build command: `uv sync --frozen && uv run manage.py collectstatic --noinput`
-   - Pre-deploy command: `uv run manage.py migrate`
-   - Start command: `uv run gunicorn bgf.wsgi --bind 0.0.0.0:$PORT`
-3. **Environment variables:** set these on the web service:
-   - `DJANGO_SECRET_KEY`: a long random value, generated once and kept secret
-   - `DATABASE_URL`
-   - `DJANGO_ALLOWED_HOSTS` and `DJANGO_CSRF_TRUSTED_ORIGINS`: the site's domain, with `https://` in the second
-   - `SITE_URL`
-   - Email: `EMAIL_HOST`, `EMAIL_HOST_USER`, `EMAIL_HOST_PASSWORD` and `DEFAULT_FROM_EMAIL`, from a low-cost email service
-
-   Leave `DJANGO_DEBUG` unset. HTTPS redirects and secure cookies turn on automatically.
-4. **Cron job:** if the Google Form is connected, add one that runs `uv run manage.py sync_forms` every 10 minutes, with the same environment variables.
-5. **First admin:** open a shell on the web service and run `uv run manage.py create_first_admin --name "..." --email ...`. It asks for the password.
-6. **Backups:** turn on daily database backups. The database is the only thing that needs backing up.
+The board is leaning toward one managed cPanel server for the WordPress site, email and every Django app. The steps, including what to confirm with the host before buying, are in [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md). On a cPanel server the app runs through `passenger_wsgi.py` and reads its settings from a `.env` file in its folder. Elsewhere, any host with Python 3.12 and PostgreSQL 14 or newer works, started with `gunicorn bgf.wsgi`.
 
 ## Seller signups from Google Forms
 
@@ -77,7 +60,7 @@ uv run manage.py sync_forms     # run every few minutes from the host's schedule
 
 ## Configuration
 
-All settings come from environment variables. See [.env.example](.env.example). In production, set `DJANGO_SECRET_KEY`, `DATABASE_URL`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `SITE_URL` and the `EMAIL_*` values, and leave `DJANGO_DEBUG` unset.
+All settings come from environment variables. See [.env.example](.env.example). Variables already set take priority over a `.env` file in the project folder. In production, set `DJANGO_SECRET_KEY`, `DATABASE_URL`, `DJANGO_ALLOWED_HOSTS`, `DJANGO_CSRF_TRUSTED_ORIGINS`, `SITE_URL` and the `EMAIL_*` values, and leave `DJANGO_DEBUG` unset.
 
 **Branding:** the convention and app names come from `BRAND_CONVENTION` and `BRAND_APP`, and a logo from `BRAND_LOGO` (a path under `static/`). Colors are at the top of [static/css/app.css](static/css/app.css).
 
@@ -92,6 +75,8 @@ apps/consignment/   Listings, slips, check-in, point of sale, pickup, payouts an
 static/vendor/      HTMX, for live register alerts
 templates/          Shared layout
 static/css/app.css  The one stylesheet
+passenger_wsgi.py   Entry point for cPanel hosting
+requirements.txt    Generated from uv.lock for hosts that use pip. See docs/DEPLOYMENT.md.
 ```
 
 Business rules live in each app's `services.py`, not in views.
